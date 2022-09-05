@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 /**
  * HttpServlet 工具类
@@ -225,7 +227,7 @@ public final class HttpServletUtil {
             setResponseHeaders(fileName, bytes.length, request, response);
             io(bytes, response.getOutputStream());
         } catch (Exception e) {
-            log.log(Level.WARNING,"文件下载异常",e);
+            log.log(Level.WARNING, "文件下载异常", e);
         }
     }
 
@@ -252,7 +254,7 @@ public final class HttpServletUtil {
 
                 return io(bis, os);
             } catch (IOException e) {
-                log.log(Level.WARNING,"文件下载异常",e);
+                log.log(Level.WARNING, "文件下载异常", e);
             } finally {
                 try {
                     bis.close();
@@ -264,6 +266,53 @@ public final class HttpServletUtil {
             }
         }
         return false;
+    }
+
+    /**
+     * 将多个文件压缩下载输出
+     *
+     * @param request      请求对象
+     * @param response     响应对象
+     * @param downFileName 压缩后的文件名称
+     * @param files        文件列表
+     * @return
+     */
+    public static boolean downFileZip(HttpServletRequest request, HttpServletResponse response, String downFileName, File... files) {
+        if (request == null) throw new RuntimeException("文件压缩下载失败，HttpServletRequest is null");
+        if (response == null) throw new RuntimeException("文件压缩下载失败，HttpServletResponse is null");
+        if (files == null) throw new RuntimeException("文件压缩下载失败，Files is null");
+
+        if (downFileName == null || "".equals(downFileName.trim())) {
+            downFileName = files.length < 2 ? downFileName = files[0].getName() : "downZip";
+            if (!downFileName.contains(".")) {
+                downFileName += ".zip";
+            }
+        }
+
+        long length = 0;
+        for (File file : files) length += file.length();
+        setResponseHeaders(downFileName, length, request, response);
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(response.getOutputStream())) {
+            FileInputStream inputStream = null;
+            for (File file : files) {
+                // 文件不存在直接跳过
+                if (!file.exists()) continue;
+
+                ZipEntry entry = new ZipEntry(file.getPath());
+                zipOutputStream.putNextEntry(entry);
+                inputStream = new FileInputStream(file);
+                io(inputStream, zipOutputStream);
+                inputStream.close();
+                zipOutputStream.closeEntry();
+                zipOutputStream.finish();
+            }
+            zipOutputStream.finish();
+        } catch (IOException e) {
+            log.log(Level.WARNING, "文件压缩下载异常", e);
+            throw new RuntimeException("文件压缩下载异常", e);
+        }
+        return true;
     }
 
     /**
