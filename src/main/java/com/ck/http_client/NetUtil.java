@@ -15,7 +15,7 @@ import java.util.logging.Logger;
  * @author cyk
  * @since 2020-01-01
  */
-public class NetUtil {
+public final class NetUtil {
 
     private static Logger log = Logger.getLogger(NetUtil.class.getName());
 

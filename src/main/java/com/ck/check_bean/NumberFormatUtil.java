@@ -10,7 +10,7 @@ import java.util.Random;
  * @author cyk
  * @since 2020-01-01
  */
-public class NumberFormatUtil {
+public final class NumberFormatUtil {
 
 	public final static Integer RATE = 100;
 

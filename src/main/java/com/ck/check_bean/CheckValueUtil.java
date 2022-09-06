@@ -13,7 +13,7 @@ import java.util.*;
  * @author cyk
  * @since 2021-06-06
  */
-public abstract class CheckValueUtil {
+public final class CheckValueUtil {
 
     /**
      * 递归非空与正则校验

@@ -10,7 +10,7 @@ import java.util.List;
  * @author cyk
  * @since 2020-01-01
  */
-public abstract class RegExUtil {
+public final class RegExUtil {
     /**
      * 手机号码匹配
      */
