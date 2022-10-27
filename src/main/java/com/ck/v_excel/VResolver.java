@@ -4,7 +4,7 @@ import com.ck.v_excel.enums.VExcelWorkbookType;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -66,7 +66,8 @@ public class VResolver {
             throw new RuntimeException("Workbook 创建异常，未指定 WorkbookType");
         }
         if (VExcelWorkbookType.XLS_X.equals(this.vExcel.getWorkbookType())) {
-            this.workbook = new XSSFWorkbook();
+//            this.workbook = new XSSFWorkbook();
+            this.workbook = new SXSSFWorkbook(100); // poi 3.8 以后版本用于解决大数据量内存溢出的问题，写出时每100行flush一次清空内存
         } else if (VExcelWorkbookType.XLS.equals(this.vExcel.getWorkbookType())) {
             this.workbook = new HSSFWorkbook();
         }

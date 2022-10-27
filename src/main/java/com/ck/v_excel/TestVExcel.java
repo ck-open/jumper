@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.FillPatternType;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -31,18 +32,25 @@ public class TestVExcel {
         }
 
         VExcel vExcel = VExcel.getInstance(excelBeans);
-//        vExcel.write(new File("C:\\Users\\ck\\Desktop\\新建文件夹\\测试Excel.xlsx"));
+        vExcel.write(new File("C:\\Users\\ck\\Desktop\\新建文件夹\\测试Excel.xlsx"));
 //        vExcel.write(new File("C:\\Users\\cyk\\Desktop\\fsdownload\\测试Excel.xlsx"));
 //        vExcel.setWorkbookType(VExcelWorkbookType.CSV).write(new File("C:\\Users\\cyk\\Desktop\\fsdownload\\测试CSV.csv"));
 
-//        vExcel.read(VExcelWorkbookType.XLS_X, new File("C:\\Users\\ck\\Desktop\\新建文件夹\\测试Excel.xlsx"));
-        vExcel.read(VExcelWorkbookType.XLS_X, new File("C:\\Users\\cyk\\Desktop\\fsdownload\\测试Excel.xlsx"));
+        vExcel.read(VExcelWorkbookType.XLS_X, new File("C:\\Users\\ck\\Desktop\\新建文件夹\\测试Excel.xlsx"));
+//        vExcel.read(VExcelWorkbookType.XLS_X, new File("C:\\Users\\cyk\\Desktop\\fsdownload\\测试Excel.xlsx"));
 //        vExcel.read(VExcelWorkbookType.CSV, new File("C:\\Users\\cyk\\Desktop\\fsdownload\\测试CSV.csv"));
         excelBeans = vExcel.readData("测试人员", ExcelBean.class);
         excelBeans = vExcel.readData(1, ExcelBean.class);
         List<List<ExcelBean>> result = vExcel.readData(ExcelBean.class);
         System.out.println(excelBeans);
         System.out.println(result);
+
+
+        List title = Arrays.asList("订单号", "保单号", "被保人", "被保人证件号", "开始时间", "结束时间", "保费", "现代合同号", "现代保单号", "现代开始时间", "现代结束时间", "现代保费", "状态", "保费差", "备注", "理赔状态", "理赔时间");
+        List<List> csvData = new ArrayList<>();
+        csvData.add(title);
+        vExcel = VExcel.getInstance(excelBeans).setWorkbookType(VExcelWorkbookType.CSV);
+        vExcel.write(new File("C:\\Users\\ck\\Desktop\\新建文件夹\\测试CSV.csv"));
 
     }
 

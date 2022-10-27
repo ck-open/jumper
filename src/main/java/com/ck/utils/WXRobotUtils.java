@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  * @author cyk
  * @since 2022-01-11
  */
-public final class WXRobotUtils {
+public class WXRobotUtils {
     private static Logger log = Logger.getLogger(WXRobotUtils.class.getName());
     private static final ExecutorService THREAD_POOL = Executors.newFixedThreadPool(10);
     private static final String robot_url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/send";
@@ -288,6 +288,7 @@ public final class WXRobotUtils {
                     log.warning("发送WX消息失败：" + response.toJSONString());
                 }
             }
+            NetUtil.close(connection);
         } catch (Exception e) {
             log.warning("发送WX消息异常：" + e);
             e.printStackTrace();
@@ -339,7 +340,7 @@ public final class WXRobotUtils {
                 NetUtil.io(new ByteArrayInputStream(formDataSuffix), out);
                 NetUtil.closeIO(null, out);
                 NetUtil.NetResult result = NetUtil.getNetResult(connection);
-
+                NetUtil.close(connection);
                 if (200 == result.getResponseCode()) {
                     /*
                     正确响应报文：

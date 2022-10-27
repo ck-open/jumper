@@ -13,7 +13,7 @@ import java.util.logging.Logger;
  * @author cyk
  * @since 2021-09-01
  */
-public final class ExceptionUtil {
+public class ExceptionUtil {
     private static Logger logger = Logger.getLogger(ExceptionUtil.class.getName());
 
     /**
@@ -23,7 +23,7 @@ public final class ExceptionUtil {
      * @param packagePrefix 指定要打印的堆栈日志中包的前缀
      * @return 仿：Exception.printStackTrace(); 的输出日志
      */
-    public static String getExceptionStackTraceInfo(Exception e, String... packagePrefix) {
+    public static String getExceptionStackTraceInfo(Throwable e, String... packagePrefix) {
         return getExceptionStackTraceInfo(e, null, packagePrefix);
     }
 
@@ -35,7 +35,7 @@ public final class ExceptionUtil {
      * @param packagePrefix 指定要打印的堆栈日志中包的前缀
      * @return 仿：Exception.printStackTrace(); 的输出日志
      */
-    public static String getExceptionStackTraceInfo(Exception e, Integer rowNum, String... packagePrefix) {
+    public static String getExceptionStackTraceInfo(Throwable e, Integer rowNum, String... packagePrefix) {
         if (e == null) {
             return null;
         }
@@ -58,6 +58,10 @@ public final class ExceptionUtil {
                 result.append("\tat ").append(ste.getClassName()).append(".").append(ste.getMethodName()).append("(").append(ste.getFileName()).append(":").append(ste.getLineNumber()).append(")").append(enter);
                 rowNum--;
             }
+        }
+
+        if (e.getCause()!=null){
+            result.append("\r\r").append(getExceptionStackTraceInfo(e.getCause(), rowNum,packagePrefix));
         }
         return result.toString();
     }
@@ -121,9 +125,21 @@ public final class ExceptionUtil {
 
     public static void main(String[] args) {
         try {
-            "".substring(0, 10);
+            try {
+                try {
+
+                    "".substring(0, 10);
+                }catch (Exception e){
+                    throw new Exception("自定义1",e);
+                }
+            }catch (Exception e){
+                throw new RuntimeException("自定义2",e);
+            }
         } catch (Exception e) {
-            exceptionStackTraceExportToFile(e, "故意发生异常的怎么嘀！", "异常文件", "D:" + File.separator);
+           String msg =  getExceptionStackTraceInfo(e);
+            System.out.println(msg);
+
+
         }
     }
 }
