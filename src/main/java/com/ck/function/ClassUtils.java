@@ -5,6 +5,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * <p>
+ * ClassUtils
+ * </p>
+ *
+ * @author Caratacus
+ * @author HCL
+ * @since 2017/07/08
+ */
 public final class ClassUtils {
 
     private static final char PACKAGE_SEPARATOR = '.';
@@ -80,7 +89,7 @@ public final class ClassUtils {
             constructor.setAccessible(true);
             return constructor.newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            throw new RuntimeException(String.format("实例化对象时出现错误,请尝试给 %s 添加无参的构造方法", clazz.getName()), e);
+            throw new RuntimeException(String.format("实例化对象时出现错误,请尝试给 %s 添加无参的构造方法", e, clazz.getName()));
         }
     }
 
@@ -96,7 +105,7 @@ public final class ClassUtils {
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {
-            throw new RuntimeException("找不到指定的class！请仅在明确确定会有 class 的时候，调用该方法", e);
+            throw new RuntimeException(String.format("找不到指定的class！请仅在明确确定会有 class 的时候，调用该方法", e));
         }
     }
 }
