@@ -89,7 +89,7 @@ public final class CheckValueUtil {
                     val = null;
                 }
 
-                CheckResult checkResult = new CheckResult().setCla(cla).setField(field).setValue(val);
+                CheckResult checkResult = new CheckResult().setCla(cla).setField(field).setValue(o);
 
                 if (val == null) {
                     if (checkValue != null && !"".equalsIgnoreCase(checkValue.defaultValue())) {

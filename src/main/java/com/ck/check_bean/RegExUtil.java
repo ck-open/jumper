@@ -92,7 +92,7 @@ public final class RegExUtil {
     /**
      * 数字  正数
      */
-    public static final String NUMBER_FLOAT_POSITIVE_REG = "^(0|[1-9][0-9]*)$";
+    public static final String NUMBER_FLOAT_POSITIVE_REG = "^([0-9]*)$";
     /**
      * 数字  正数不含0
      */
@@ -100,11 +100,11 @@ public final class RegExUtil {
     /**
      * 数字  负数
      */
-    public static final String NUMBER_FLOAT_MINUS_REG = "^(0|-[1-9][0-9]*)(\\.\\d{1,})?$";
+    public static final String NUMBER_FLOAT_MINUS_REG = "^0|(-[0-9]*)(\\.\\d{1,})?$";
     /**
      * 数字  负数不含0
      */
-    public static final String NUMBER_FLOAT_MINUS_NOT_0_REG = "^(-[1-9][0-9]*)(\\.\\d{1,})?$";
+    public static final String NUMBER_FLOAT_MINUS_NOT_0_REG = "^(-[0-9]*)(\\.\\d{1,})?$";
 
     /**
      * 电话座机格式验证
@@ -351,6 +351,7 @@ public final class RegExUtil {
 
         System.out.println(getInRegEx(Arrays.asList("05", "08", "01")));
         System.out.println("".matches("^05|08|01$"));
+        System.out.println("0".matches(NUMBER_FLOAT_POSITIVE_REG));
 
     }
 
