@@ -364,33 +364,38 @@ public final class FileUtil {
      * @return
      */
     public static String readFileToString(File file) {
-        return readFileToString(file, "UTF-8");
+        try {
+            return readFileToString(new FileInputStream(file), "UTF-8");
+        } catch (FileNotFoundException e) {
+            log.log(Level.WARNING,"文件读取异常",e);
+        }
+        return null;
     }
 
     /**
      * 读取文件到字符串
      *
-     * @param file    目标文件
+     * @param inputStream    目标文件
      * @param charset 字符集
      * @return
      */
-    public static String readFileToString(File file, String charset) {
+    public static String readFileToString(InputStream inputStream, String charset) {
         String result = "";
         try {
-            FileReader fileReader = new FileReader(file);
-            Reader reader = new InputStreamReader(new FileInputStream(file), charset);
+//            FileReader fileReader = new FileReader(file);
+            Reader reader = new InputStreamReader(inputStream, charset);
             int ch = 0;
             StringBuffer sb = new StringBuffer();
             while ((ch = reader.read()) != -1) {
                 sb.append((char) ch);
             }
-            fileReader.close();
+//            fileReader.close();
             reader.close();
             result = sb.toString();
             return result;
         } catch (IOException e) {
             e.printStackTrace();
-            log.warning(String.format("读取文件到字符串操作出错:%s   %s   %s", file, charset, e.getMessage()));
+            log.warning(String.format("读取文件到字符串操作出错:%s   %s   %s", inputStream, charset, e.getMessage()));
         }
         return null;
     }

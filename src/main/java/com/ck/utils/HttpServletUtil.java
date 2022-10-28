@@ -1,5 +1,6 @@
 package com.ck.utils;
 
+
 import com.ck.http_client.NetUtil;
 
 import javax.servlet.http.HttpServletRequest;
@@ -224,7 +225,7 @@ public final class HttpServletUtil {
     public static void downFile(HttpServletRequest request, HttpServletResponse response, ByteArrayOutputStream data, String fileName) {
         try {
             byte[] bytes = data.toByteArray();
-            setResponseHeaders(fileName, bytes.length, request, response);
+            setResponseHeaders(fileName, (long) bytes.length, request, response);
             io(bytes, response.getOutputStream());
         } catch (Exception e) {
             log.log(Level.WARNING, "文件下载异常", e);
@@ -323,7 +324,7 @@ public final class HttpServletUtil {
      * @param request
      * @param response
      */
-    public static void setResponseHeaders(String fileName, long length, HttpServletRequest request, HttpServletResponse response) {
+    public static void setResponseHeaders(String fileName, Long length, HttpServletRequest request, HttpServletResponse response) {
 //        response.reset();
         String excelName = restFileNameByBrowser(fileName, request);
         response.reset();
@@ -332,7 +333,8 @@ public final class HttpServletUtil {
         setContentTypeByteFileType(fileName, response);
 
         response.setCharacterEncoding("utf-8");
-        response.setHeader("Content-Length", "" + length);
+        if (length != null)
+            response.setHeader("Content-Length", "" + length);
     }
 
     /**
