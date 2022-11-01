@@ -32,7 +32,8 @@ public class TestVExcel {
         }
 
         VExcel vExcel = VExcel.getInstance(excelBeans);
-        vExcel.write(new File("C:\\Users\\ck\\Desktop\\新建文件夹\\测试Excel.xlsx"));
+        vExcel.setWorkbookType(VExcelWorkbookType.XLS);
+        vExcel.write(new File("C:\\Users\\ck\\Desktop\\新建文件夹\\测试Excel.xls"));
 //        vExcel.write(new File("C:\\Users\\cyk\\Desktop\\fsdownload\\测试Excel.xlsx"));
 //        vExcel.setWorkbookType(VExcelWorkbookType.CSV).write(new File("C:\\Users\\cyk\\Desktop\\fsdownload\\测试CSV.csv"));
 

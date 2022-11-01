@@ -211,7 +211,7 @@ public @interface VExcelCell {
     boolean isRowNumber() default false;
 
     /**
-     * 设置自适应列宽 默认不设置
+     * 设置自适应列宽 默认不设置   xls格式不支持此属性，设置后将不生效
      *
      * @return
      */

@@ -2,8 +2,10 @@ package com.ck.v_excel;
 
 import com.ck.v_excel.annotation.VExcelCell;
 import com.ck.v_excel.annotation.VExcelTable;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -52,8 +54,16 @@ public final class VResolverWrite {
                 // 读取类注解ETable
                 VExcelTable vExcelTable = sheetData.get(0).getClass().getDeclaredAnnotation(VExcelTable.class);
                 if (vExcelTable == null) continue;
-                // 创建Sheet 页
-                Sheet sheet = "".equals(vExcelTable.sheetName().trim()) ? workbook.createSheet() : workbook.createSheet(vExcelTable.sheetName());
+                // 创建Sheet 页  如果名称已存在则向后增加序列
+                String sheetName = "".equals(vExcelTable.sheetName().trim()) ? "VExcelData" : vExcelTable.sheetName();
+                if (workbook.getSheet(sheetName) != null) {
+                    int index = 0;
+                    do {
+                        sheetName += ++index;
+                    } while (workbook.getSheet(sheetName) != null);
+                }
+
+                Sheet sheet = workbook.createSheet(sheetName);
 
                 // 记录包含ECell 注解的Field 名称 及对应的单元格样式对象CellStyle
                 Map<String, CellStyle> fieldStyle = VResolverStyle.parseCellStyleByVExcelCell(sheet, sheetData.get(0).getClass());
@@ -121,13 +131,16 @@ public final class VResolverWrite {
      * @param cla   数据实体对象
      */
     public static void setAutoSizeColumn(Sheet sheet, Class<?> cla) {
-        if (sheet == null || cla == null) return;
-
+        if (sheet == null || cla == null || sheet instanceof HSSFSheet) return;
+        SXSSFSheet sxssfSheet = (SXSSFSheet) sheet;
+        sxssfSheet.trackAllColumnsForAutoSizing();
         int index = 0;
         for (Field field : cla.getDeclaredFields()) {
             VExcelCell vExcelCell = field.getDeclaredAnnotation(VExcelCell.class);
             if (vExcelCell != null) {
-                if (vExcelCell.autoSizeColumn()) sheet.autoSizeColumn(index);
+                if (vExcelCell.autoSizeColumn()) {
+                    sxssfSheet.autoSizeColumn(index);
+                }
                 index++;
             }
         }
