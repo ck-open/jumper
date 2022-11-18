@@ -345,36 +345,6 @@ public class Calculator {
             return BigDecimal.ONE;
         }
 
-
-        /**
-         * 求和
-         *
-         * @param stack
-         * @return true 返回1  false返回0
-         */
-        public static BigDecimal sum(Stack<String> stack) {
-            BigDecimal sum = new BigDecimal("0");
-            while (!stack.isEmpty()) {
-                sum = sum.add(new BigDecimal(stack.pop()));
-            }
-            return sum;
-        }
-
-        /**
-         * 求平均值
-         *
-         * @param stack
-         * @return
-         */
-        public static BigDecimal avg(Stack<String> stack) {
-            BigDecimal sum = new BigDecimal("0");
-            int count = stack.size();
-            while (!stack.isEmpty()) {
-                sum = sum.add(new BigDecimal(stack.pop()));
-            }
-            return sum.divide(new BigDecimal(count), 10, BigDecimal.ROUND_HALF_UP);
-        }
-
         /**
          * 取整  四舍五入
          *
@@ -412,6 +382,77 @@ public class Calculator {
                 throw new CalculatorException.FunctionRun("Round function parameter error");
             }
             return new BigDecimal(stack.pop()).setScale(Integer.parseInt(stack.pop()), BigDecimal.ROUND_DOWN);
+        }
+
+        /**
+         * 求和
+         *
+         * @param stack
+         * @return true 返回1  false返回0
+         */
+        public static BigDecimal sum(Stack<String> stack) {
+            BigDecimal sum = new BigDecimal("0");
+            while (!stack.isEmpty()) {
+                sum = sum.add(new BigDecimal(stack.pop()));
+            }
+            return sum;
+        }
+
+        /**
+         * 求平均值
+         *
+         * @param stack
+         * @return
+         */
+        public static BigDecimal avg(Stack<String> stack) {
+            BigDecimal sum = new BigDecimal("0");
+            int count = stack.size();
+            while (!stack.isEmpty()) {
+                sum = sum.add(new BigDecimal(stack.pop()));
+            }
+            return sum.divide(new BigDecimal(count), 10, BigDecimal.ROUND_HALF_UP);
+        }
+
+        /**
+         * 最大值
+         *
+         * @param stack
+         * @return
+         */
+        public static BigDecimal max(Stack<String> stack) {
+            BigDecimal max = BigDecimal.ZERO;
+            while (!stack.isEmpty()) {
+                BigDecimal next = new BigDecimal(stack.pop());
+                if (max.compareTo(next) < 0) max = next;
+            }
+            return max;
+        }
+
+        /**
+         * min
+         *
+         * @param stack
+         * @return
+         */
+        public static BigDecimal min(Stack<String> stack) {
+            BigDecimal min = new BigDecimal(stack.pop());
+            while (!stack.isEmpty()) {
+                BigDecimal next = new BigDecimal(stack.pop());
+                if (min.compareTo(next) > 0) min = next;
+            }
+            return min;
+        }
+
+        /**
+         * count
+         *
+         * @param stack
+         * @return
+         */
+        public static BigDecimal count(Stack<String> stack) {
+            BigDecimal count = BigDecimal.ZERO;
+            if (stack != null) count = new BigDecimal(stack.size());
+            return count;
         }
     }
 }
