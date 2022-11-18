@@ -325,14 +325,14 @@ public class Calculator {
          * @param stack
          * @return true 返回1  false返回0
          */
-        public static BigDecimal OR(Stack stack) {
+        public static BigDecimal or(Stack stack) {
             while (!stack.empty()) {
                 if (isTrue(stack.pop().toString())) return BigDecimal.ONE;
             }
             return BigDecimal.ZERO;
         }
 
-        public static BigDecimal AND(Stack stack) {
+        public static BigDecimal and(Stack stack) {
             while (!stack.empty()) {
                 if (!isTrue(stack.pop().toString())) return BigDecimal.ZERO;
             }
