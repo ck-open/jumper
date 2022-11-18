@@ -41,7 +41,7 @@ public class Calculator {
     /**
      * 设置自定义函数类
      */
-    public void setFunctionClass(Class<? super Function> functionClass) {
+    public void setFunctionClass(Class<?> functionClass) {
         if (functionClass != null) {
             this.functionClass = functionClass;
 
@@ -133,7 +133,10 @@ public class Calculator {
 
             // 如果有自定义函数类则优先使用自定义函数
             if (functionClass != null) {
-                get = functionClass.getDeclaredMethod(methodName, Stack.class);
+                try {
+                    get = functionClass.getDeclaredMethod(methodName, Stack.class);
+                } catch (Exception ignored) {
+                }
             }
             if (get == null) {
                 get = Function.class.getDeclaredMethod(functionNames.get(functionName.toLowerCase()), Stack.class);
