@@ -142,7 +142,7 @@ public class Calculator {
             //获取方法返回值
             return (BigDecimal) get.invoke(null, functionParamStack);
         } catch (Exception e) {
-            throw new CalculatorException.FunctionInExistence("The function doesn't exist  functionName:" + functionName, e);
+            throw new CalculatorException.FunctionInExistence("The function doesn't exist  functionName: " + functionName, e);
         }
     }
 
@@ -176,21 +176,26 @@ public class Calculator {
     private void resolution(String equation) {
         //定义临时存储运算符的栈
         Stack<String> stack = new Stack<>();
-        StringBuilder tempStringBuilder = new StringBuilder();
+        StringBuilder tempEquation = new StringBuilder();  // 记录当前运算符 及参数值
         for (int i = 0; i < equation.length(); i++) {
-            tempStringBuilder.append(equation, i, i + 1);
-            if (i + 2 <= equation.length() && !isTrue(equation.substring(i + 1, i + 2)) && !isTrue(tempStringBuilder.toString())) {
+            tempEquation.append(equation, i, i + 1);
+
+            // 判断当前字符为数字则跳过运算符入栈
+            if (i < equation.length() - 1  // 当前长度总长度
+                    && !isTrue(tempEquation.toString()) // 当前字符不是运算符
+                    && !isTrue(equation.substring(i + 1, i + 2)) // 下一个字符不是运算符
+                    || ((i == 0 || isTrue(equation.substring(i - 1, i))) // 上一个字符为运算符且不是‘）’ 或 当前为第一个字符 且本次为‘-’ 则表示为负数
+                    && "-".contentEquals(tempEquation) && !")".equals(equation.substring(i - 1, i)))) {
                 continue;
             }
-            String temp = tempStringBuilder.toString();
-            //清空Stringbuilder
-            tempStringBuilder = new StringBuilder();
-            //如果“(”直接入栈
+
+            String temp = tempEquation.toString();
+            tempEquation = new StringBuilder(); //清空Stringbuilder
+
             if (functionNames.containsKey(temp.toLowerCase())) {
                 stack.push(temp);
                 expressQueue.add(temp);
-
-            } else if ("(".equals(temp)) {
+            } else if ("(".equals(temp)) {  //如果“(”直接入栈
                 stack.push(temp);
                 //如果“）”直接入栈，运算符出栈进入队列，直到遇到“（”，并去除“（”
             } else if (")".equals(temp)) {
@@ -203,7 +208,7 @@ public class Calculator {
                         break;
                     }
                     //","只用来判断，不加入到后缀表达式中
-                    String operatorString = stack.pop().toString();
+                    String operatorString = stack.pop();
                     if (!",".equals(operatorString)) {
                         expressQueue.add(operatorString);
                     }
@@ -213,7 +218,7 @@ public class Calculator {
                 while (true) {
                     if (!stack.isEmpty() && getPriority(temp) <= getPriority(stack.peek())) {
                         //","只用来判断，不加入到后缀表达式中
-                        String operatorString = stack.pop().toString();
+                        String operatorString = stack.pop();
                         if (!",".equals(operatorString)) {
                             expressQueue.add(operatorString);
                         }
@@ -242,7 +247,8 @@ public class Calculator {
 
     /**
      * 运算符判断
-     * @param temp  运算符
+     *
+     * @param temp 运算符
      * @return
      */
     private int getPriority(String temp) {
@@ -312,10 +318,10 @@ public class Calculator {
          * @param stack
          * @return
          */
-        public static BigDecimal IF(Stack stack) {
-            String logical_test = stack.pop().toString();
-            String val1 = stack.pop().toString();
-            String val2 = stack.pop().toString();
+        public static BigDecimal IF(Stack<String> stack) {
+            String logical_test = stack.pop();
+            String val1 = stack.pop();
+            String val2 = stack.pop();
             return isTrue(logical_test) ? new BigDecimal(val1) : new BigDecimal(val2);
         }
 
@@ -325,16 +331,16 @@ public class Calculator {
          * @param stack
          * @return true 返回1  false返回0
          */
-        public static BigDecimal or(Stack stack) {
+        public static BigDecimal or(Stack<String> stack) {
             while (!stack.empty()) {
-                if (isTrue(stack.pop().toString())) return BigDecimal.ONE;
+                if (isTrue(stack.pop())) return BigDecimal.ONE;
             }
             return BigDecimal.ZERO;
         }
 
-        public static BigDecimal and(Stack stack) {
+        public static BigDecimal and(Stack<String> stack) {
             while (!stack.empty()) {
-                if (!isTrue(stack.pop().toString())) return BigDecimal.ZERO;
+                if (!isTrue(stack.pop())) return BigDecimal.ZERO;
             }
             return BigDecimal.ONE;
         }
@@ -346,10 +352,10 @@ public class Calculator {
          * @param stack
          * @return true 返回1  false返回0
          */
-        public static BigDecimal sum(Stack stack) {
+        public static BigDecimal sum(Stack<String> stack) {
             BigDecimal sum = new BigDecimal("0");
             while (!stack.isEmpty()) {
-                sum = sum.add(new BigDecimal(stack.pop().toString()));
+                sum = sum.add(new BigDecimal(stack.pop()));
             }
             return sum;
         }
@@ -360,11 +366,11 @@ public class Calculator {
          * @param stack
          * @return
          */
-        public static BigDecimal avg(Stack stack) {
+        public static BigDecimal avg(Stack<String> stack) {
             BigDecimal sum = new BigDecimal("0");
             int count = stack.size();
             while (!stack.isEmpty()) {
-                sum = sum.add(new BigDecimal(stack.pop().toString()));
+                sum = sum.add(new BigDecimal(stack.pop()));
             }
             return sum.divide(new BigDecimal(count), 10, BigDecimal.ROUND_HALF_UP);
         }
@@ -375,11 +381,11 @@ public class Calculator {
          * @param stack
          * @return
          */
-        public static BigDecimal round(Stack stack) {
+        public static BigDecimal round(Stack<String> stack) {
             if (stack == null || stack.size() != 2) {
                 throw new CalculatorException.FunctionRun("Round function parameter error");
             }
-            return new BigDecimal(stack.pop().toString()).setScale(Integer.parseInt(stack.pop().toString()), BigDecimal.ROUND_HALF_UP);
+            return new BigDecimal(stack.pop()).setScale(Integer.parseInt((String) stack.pop()), BigDecimal.ROUND_HALF_UP);
         }
 
         /**
@@ -388,11 +394,11 @@ public class Calculator {
          * @param stack
          * @return
          */
-        public static BigDecimal roundup(Stack stack) {
+        public static BigDecimal roundup(Stack<String> stack) {
             if (stack == null || stack.size() != 2) {
                 throw new CalculatorException.FunctionRun("Round function parameter error");
             }
-            return new BigDecimal(stack.pop().toString()).setScale(Integer.parseInt(stack.pop().toString()), BigDecimal.ROUND_UP);
+            return new BigDecimal(stack.pop()).setScale(Integer.parseInt(stack.pop()), BigDecimal.ROUND_UP);
         }
 
         /**
@@ -401,11 +407,11 @@ public class Calculator {
          * @param stack
          * @return
          */
-        public static BigDecimal roundDown(Stack stack) {
+        public static BigDecimal roundDown(Stack<String> stack) {
             if (stack == null || stack.size() != 2) {
                 throw new CalculatorException.FunctionRun("Round function parameter error");
             }
-            return new BigDecimal(stack.pop().toString()).setScale(Integer.parseInt(stack.pop().toString()), BigDecimal.ROUND_DOWN);
+            return new BigDecimal(stack.pop()).setScale(Integer.parseInt(stack.pop()), BigDecimal.ROUND_DOWN);
         }
     }
 }
