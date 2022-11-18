@@ -61,7 +61,9 @@ public class Calculator {
      */
     public BigDecimal calculate(String equation) {
         resolution(equation);
-        return calculate();
+        BigDecimal result = calculate();
+        log.info("Function Calculate Result: " + equation + " = " + result);
+        return result;
     }
 
     private BigDecimal calculate() {
@@ -147,10 +149,10 @@ public class Calculator {
     /**
      * 二元运算
      *
-     * @param num1
-     * @param num2
-     * @param template
-     * @return
+     * @param num1     值1
+     * @param num2     值2
+     * @param template 运算符
+     * @return 计算结果
      */
     public String operation(BigDecimal num1, BigDecimal num2, String template) {
         BigDecimal num = BigDecimal.ZERO;
@@ -238,6 +240,11 @@ public class Calculator {
         }
     }
 
+    /**
+     * 运算符判断
+     * @param temp  运算符
+     * @return
+     */
     private int getPriority(String temp) {
         if ("+".equals(temp) || "-".equals(temp)) {
             return 1;
@@ -253,7 +260,7 @@ public class Calculator {
     /**
      * 判断是不是特殊符号
      *
-     * @param temp
+     * @param temp 符号
      * @return
      */
     private boolean isTrue(String temp) {
@@ -267,7 +274,7 @@ public class Calculator {
     /**
      * 默认函数实现函数
      */
-    public static class Function {
+    private final static class Function {
         /**
          * 判断boolean 表达式结果
          *
@@ -280,8 +287,8 @@ public class Calculator {
                 return test[0].equals(test[1]);
             } else if (logical_test.contains("true") || logical_test.contains("false")) {
                 return Boolean.parseBoolean(logical_test);
-            } else if (logical_test.contains("<>") || logical_test.contains("!=")) {
-                String[] test = logical_test.split(logical_test.contains("<>") ? "<>" : "!=");
+            } else if (logical_test.contains("<>") || logical_test.contains("><") || logical_test.contains("!=")) {
+                String[] test = logical_test.split(logical_test.contains("<>") ? "<>" : logical_test.contains("><") ? "><" : "!=");
                 return !test[0].equals(test[1]);
             } else if (logical_test.contains("<")) {
                 String[] test = logical_test.split("<");
