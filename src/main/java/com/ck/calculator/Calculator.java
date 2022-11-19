@@ -14,6 +14,32 @@ public class Calculator {
     private Logger log = Logger.getLogger(Calculator.class.getName());
 
     /**
+     * 获取支持的计算符和函数名列表
+     *
+     * @param functionClass
+     * @return
+     */
+    public static Set<String> getTag(Class<?> functionClass) {
+
+        Set<String> tag = new LinkedHashSet<>(Arrays.asList("+", "-", "*", "/", "(", ")", ",", "<", ">", "<>", "><", "==", "!=","{","}"));
+        // 默认函数
+        for (Method m : Function.class.getDeclaredMethods()) {
+            if (m.getName().contains("$") || m.getName().contains("isTrue")) continue;
+            tag.add(m.getName().toLowerCase());
+            tag.add(m.getName().toUpperCase());
+        }
+
+        // 自定义函数
+        if (functionClass != null) {
+            for (Method m : functionClass.getDeclaredMethods()) {
+                tag.add(m.getName().toLowerCase());
+                tag.add(m.getName().toUpperCase());
+            }
+        }
+        return tag;
+    }
+
+    /**
      * 默认计算精度
      */
     private int scale = 10;
@@ -39,9 +65,19 @@ public class Calculator {
     }
 
     /**
+     * 设置默认保留精度
+     *
+     * @param scale
+     */
+    public Calculator setScale(int scale) {
+        this.scale = scale;
+        return this;
+    }
+
+    /**
      * 设置自定义函数类
      */
-    public void setFunctionClass(Class<?> functionClass) {
+    public Calculator setFunctionClass(Class<?> functionClass) {
         if (functionClass != null) {
             this.functionClass = functionClass;
 
@@ -50,6 +86,7 @@ public class Calculator {
                 this.functionNames.put(m.getName().toLowerCase(), m.getName());
             }
         }
+        return this;
     }
 
 
@@ -60,7 +97,8 @@ public class Calculator {
      * @return
      */
     public BigDecimal calculate(String equation) {
-        resolution(equation);
+        // 清除占位符标记
+        resolution(equation.replaceAll("\\{","").replaceAll("}",""));
         BigDecimal result = calculate();
         log.info("Function Calculate Result: " + equation + " = " + result);
         return result;
@@ -358,7 +396,7 @@ public class Calculator {
             if (stack == null || stack.size() != 2) {
                 throw new CalculatorException.FunctionRun("Round function parameter error");
             }
-            return new BigDecimal(stack.pop()).setScale(Integer.parseInt((String) stack.pop()), BigDecimal.ROUND_HALF_UP);
+            return new BigDecimal(stack.pop()).setScale(Integer.parseInt(stack.pop()), BigDecimal.ROUND_HALF_UP);
         }
 
         /**
@@ -394,11 +432,12 @@ public class Calculator {
          * @return true 返回1  false返回0
          */
         public static BigDecimal sum(Stack<String> stack) {
-            BigDecimal sum = new BigDecimal("0");
-            while (!stack.isEmpty()) {
-                sum = sum.add(new BigDecimal(stack.pop()));
-            }
-            return sum;
+//            BigDecimal sum = new BigDecimal("0");
+//            while (!stack.isEmpty()) {
+//                sum = sum.add(new BigDecimal(stack.pop()));
+//            }
+//            return sum;
+            return stack.stream().map(BigDecimal::new).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
         /**
@@ -408,12 +447,13 @@ public class Calculator {
          * @return
          */
         public static BigDecimal avg(Stack<String> stack) {
-            BigDecimal sum = new BigDecimal("0");
-            int count = stack.size();
-            while (!stack.isEmpty()) {
-                sum = sum.add(new BigDecimal(stack.pop()));
-            }
-            return sum.divide(new BigDecimal(count), 10, BigDecimal.ROUND_HALF_UP);
+//            BigDecimal sum = new BigDecimal("0");
+//            int count = stack.size();
+//            while (!stack.isEmpty()) {
+//                sum = sum.add(new BigDecimal(stack.pop()));
+//            }
+//            return sum.divide(new BigDecimal(count), 10, BigDecimal.ROUND_HALF_UP);
+            return new BigDecimal(stack.stream().mapToDouble(i -> new BigDecimal(i).doubleValue()).average().orElse(0.0));
         }
 
         /**
@@ -423,12 +463,13 @@ public class Calculator {
          * @return
          */
         public static BigDecimal max(Stack<String> stack) {
-            BigDecimal max = BigDecimal.ZERO;
-            while (!stack.isEmpty()) {
-                BigDecimal next = new BigDecimal(stack.pop());
-                if (max.compareTo(next) < 0) max = next;
-            }
-            return max;
+//            BigDecimal max = BigDecimal.ZERO;
+//            while (!stack.isEmpty()) {
+//                BigDecimal next = new BigDecimal(stack.pop());
+//                if (max.compareTo(next) < 0) max = next;
+//            }
+//            return max;
+            return stack.stream().map(BigDecimal::new).max(Comparator.comparing(BigDecimal::doubleValue)).orElse(BigDecimal.ZERO);
         }
 
         /**
@@ -438,12 +479,13 @@ public class Calculator {
          * @return
          */
         public static BigDecimal min(Stack<String> stack) {
-            BigDecimal min = new BigDecimal(stack.pop());
-            while (!stack.isEmpty()) {
-                BigDecimal next = new BigDecimal(stack.pop());
-                if (min.compareTo(next) > 0) min = next;
-            }
-            return min;
+//            BigDecimal min = new BigDecimal(stack.pop());
+//            while (!stack.isEmpty()) {
+//                BigDecimal next = new BigDecimal(stack.pop());
+//                if (min.compareTo(next) > 0) min = next;
+//            }
+//            return min;
+            return stack.stream().map(BigDecimal::new).min(Comparator.comparing(BigDecimal::doubleValue)).orElse(BigDecimal.ZERO);
         }
 
         /**
@@ -453,9 +495,8 @@ public class Calculator {
          * @return
          */
         public static BigDecimal count(Stack<String> stack) {
-            BigDecimal count = BigDecimal.ZERO;
-            if (stack != null) count = new BigDecimal(stack.size());
-            return count;
+            if (stack != null) return new BigDecimal(stack.size());
+            return BigDecimal.ZERO;
         }
     }
 }
