@@ -409,7 +409,8 @@ public class WXRobotUtils {
             debugData += "\r\n\r\n" + ExceptionUtil.getExceptionStackTraceInfo(e);
         }
         WXRobotUtils.sendTextAsync(sendKey, sendContent, uuid);
-        WXRobotUtils.sendFileAsync(sendKey, uuid + ".txt", debugData.getBytes(StandardCharsets.UTF_8));
+        if (debugData != null && !"".equals(debugData.trim()))
+            WXRobotUtils.sendFileAsync(sendKey, uuid + ".txt", debugData.getBytes(StandardCharsets.UTF_8));
     }
 
 
