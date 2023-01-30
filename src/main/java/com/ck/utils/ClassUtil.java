@@ -175,27 +175,30 @@ public final class ClassUtil {
         final int FLAG_SERIALIZABLE = 1;
         final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-        try {
+        if (fieldName != null && entityClass != null && invokedType != null) {
+            try {
+                String name = "get" + fieldName.substring(0, 1).toUpperCase();
+                if (fieldName.length() > 1) name += fieldName.substring(1);
 
-            String name = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-            Method method = entityClass.getDeclaredMethod(name);
-            if (method != null) {
-                MethodType methodType = MethodType.methodType(method.getReturnType(), entityClass);
+                Method method = entityClass.getDeclaredMethod(name);
+                if (method != null) {
+                    MethodType methodType = MethodType.methodType(method.getReturnType(), entityClass);
 
-                //方法名叫做:getSecretLevel  转换为 SFunction function interface对象
-                final CallSite site = LambdaMetafactory.altMetafactory(lookup,
-                        "invoke",
+                    //方法名叫做:getSecretLevel  转换为 SFunction function interface对象
+                    final CallSite site = LambdaMetafactory.altMetafactory(lookup,
+                            "invoke",
 //                    MethodType.methodType(SFunction.class),
-                        MethodType.methodType(invokedType),
-                        methodType,
-                        lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
-                        methodType, FLAG_SERIALIZABLE);
+                            MethodType.methodType(invokedType),
+                            methodType,
+                            lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
+                            methodType, FLAG_SERIALIZABLE);
 
 //            return (SFunction) site.getTarget().invokeExact();
-                return site.getTarget();
+                    return site.getTarget();
+                }
+            } catch (NoSuchMethodException | IllegalAccessException | LambdaConversionException e) {
+                throw new RuntimeException("获取get" + fieldName + "方法错误", e);
             }
-        } catch (NoSuchMethodException | IllegalAccessException | LambdaConversionException e) {
-            throw new RuntimeException("获取get" + fieldName + "方法错误", e);
         }
         return null;
     }
