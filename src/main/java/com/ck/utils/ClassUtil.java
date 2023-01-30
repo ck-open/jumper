@@ -72,12 +72,12 @@ public final class ClassUtil {
     }
 
     /**
+     * @param o          实现接口的实体对象
+     * @param interfaces 指定要获取的接口，不指定则获取实体对象实现的所有接口泛型
+     * @return Map<String, Type>  key: 接口className  v:对应接口的泛型列表
      * @description 获取接口指定的泛型类型
      * @author Cyk
      * @since 14:05 2022/4/22
-     * @param o 实现接口的实体对象
-     * @param interfaces  指定要获取的接口，不指定则获取实体对象实现的所有接口泛型
-     * @return Map<String,Type>  key: 接口className  v:对应接口的泛型列表
      **/
     public static Map<String, Type[]> getGenericInterfaces(Object o, Class<?>... interfaces) {
         Set<String> interfacesClassName = null;
@@ -164,32 +164,38 @@ public final class ClassUtil {
 
     /**
      * 获取指定字段get方法的MethodHandle对象
+     *
      * @param fieldName   字段名称
      * @param entityClass 字段所属类
      * @param invokedType 返回值类型
      * @return
      * @throws Throwable
      */
-    public static MethodHandle getFieldMethodHandle(String fieldName, Class<?> entityClass, Class<?> invokedType) throws Throwable {
+    public static MethodHandle getFieldMethodHandle(String fieldName, Class<?> entityClass, Class<?> invokedType) {
         final int FLAG_SERIALIZABLE = 1;
         final MethodHandles.Lookup lookup = MethodHandles.lookup();
 
-        String name = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
-        Method method = entityClass.getDeclaredMethod(name);
-        if (method != null) {
-            MethodType methodType = MethodType.methodType(method.getReturnType(), entityClass);
+        try {
 
-            //方法名叫做:getSecretLevel  转换为 SFunction function interface对象
-            final CallSite site = LambdaMetafactory.altMetafactory(lookup,
-                    "invoke",
+            String name = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+            Method method = entityClass.getDeclaredMethod(name);
+            if (method != null) {
+                MethodType methodType = MethodType.methodType(method.getReturnType(), entityClass);
+
+                //方法名叫做:getSecretLevel  转换为 SFunction function interface对象
+                final CallSite site = LambdaMetafactory.altMetafactory(lookup,
+                        "invoke",
 //                    MethodType.methodType(SFunction.class),
-                    MethodType.methodType(invokedType),
-                    methodType,
-                    lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
-                    methodType, FLAG_SERIALIZABLE);
+                        MethodType.methodType(invokedType),
+                        methodType,
+                        lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
+                        methodType, FLAG_SERIALIZABLE);
 
 //            return (SFunction) site.getTarget().invokeExact();
-            return site.getTarget();
+                return site.getTarget();
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | LambdaConversionException e) {
+            throw new RuntimeException("获取get" + fieldName + "方法错误", e);
         }
         return null;
     }
