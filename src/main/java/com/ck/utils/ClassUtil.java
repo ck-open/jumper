@@ -1,6 +1,8 @@
 package com.ck.utils;
 
 import java.io.*;
+import java.lang.invoke.*;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashSet;
@@ -156,6 +158,38 @@ public final class ClassUtil {
             } catch (IOException | ClassNotFoundException e) {
                 log.warning(String.format("bytesToObject error:%s", e.getMessage()));
             }
+        }
+        return null;
+    }
+
+    /**
+     * 获取指定字段get方法的MethodHandle对象
+     * @param fieldName   字段名称
+     * @param entityClass 字段所属类
+     * @param invokedType 返回值类型
+     * @return
+     * @throws Throwable
+     */
+    public static MethodHandle getFieldMethodHandle(String fieldName, Class<?> entityClass, Class<?> invokedType) throws Throwable {
+        final int FLAG_SERIALIZABLE = 1;
+        final MethodHandles.Lookup lookup = MethodHandles.lookup();
+
+        String name = "get" + fieldName.substring(0, 1).toUpperCase() + fieldName.substring(1);
+        Method method = entityClass.getDeclaredMethod(name);
+        if (method != null) {
+            MethodType methodType = MethodType.methodType(method.getReturnType(), entityClass);
+
+            //方法名叫做:getSecretLevel  转换为 SFunction function interface对象
+            final CallSite site = LambdaMetafactory.altMetafactory(lookup,
+                    "invoke",
+//                    MethodType.methodType(SFunction.class),
+                    MethodType.methodType(invokedType),
+                    methodType,
+                    lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
+                    methodType, FLAG_SERIALIZABLE);
+
+//            return (SFunction) site.getTarget().invokeExact();
+            return site.getTarget();
         }
         return null;
     }
