@@ -171,5 +171,8 @@ public class SnowflakeIdGenerator {
 
     //==============================Test=============================================
 
+    public static void main(String[] args) {
+        SnowflakeIdGenerator snowflakeIdGenerator = new SnowflakeIdGenerator(1, 2);
+    }
 
 }
