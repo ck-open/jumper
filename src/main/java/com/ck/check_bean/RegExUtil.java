@@ -230,7 +230,7 @@ public final class RegExUtil {
      *
      * @param reg 通配符地址
      * @param url 比较地址
-     * @return
+     * @return 匹配成功返回true
      */
     public static boolean checkMatchingUrl(String reg, String url) {
 
