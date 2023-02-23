@@ -41,7 +41,7 @@ public final class CheckValueUtil {
             CheckValue checkValue = field.getAnnotation(CheckValue.class);
             if (checkValue == null) continue;
 
-            String key = cla.getSimpleName() + "." + field.getName();
+            String key = field.getName();
             Object val = getVal(field, o, key);
 
             CheckResult checkResult = new CheckResult().setCla(cla).setField(field).setValue(val);
