@@ -2,8 +2,11 @@ package com.ck.check_bean;
 
 import com.alibaba.fastjson.JSONObject;
 import com.ck.check_bean.annotation.CheckValue;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -34,6 +37,7 @@ public class TestCheckValueUtil {
         demo.setItem(new DemoItem());
         demo.getItem().setInteItem(658);
 //        demo.getItem().setStrItem("sdfds");
+        demo.setItems(Arrays.asList(new DemoItem(),new DemoItem()));
 
         demo.setDoub("-25.67");
         demo.setStrTime("2022-08-04 18:42:35");
@@ -55,6 +59,8 @@ public class TestCheckValueUtil {
 
     }
 
+    @Data
+    @Accessors(chain = true)
     static class Demo {
         @CheckValue(value = "测试字符串", flag = {"P"})
         private String str;
@@ -66,68 +72,16 @@ public class TestCheckValueUtil {
         private String doub;
         @CheckValue(value = "测试子对象", flag = {"P", "E"}, isChild = true)
         private DemoItem item;
+        @CheckValue(value = "测试子对象列表", flag = {"P", "E"}, isChild = true)
+        private List<DemoItem> items;
 
-        public String getStr() {
-            return str;
-        }
-
-        public void setStr(String str) {
-            this.str = str;
-        }
-
-        public Integer getInte() {
-            return inte;
-        }
-
-        public void setInte(Integer inte) {
-            this.inte = inte;
-        }
-
-        public DemoItem getItem() {
-            return item;
-        }
-
-        public void setItem(DemoItem item) {
-            this.item = item;
-        }
-
-        public String getDoub() {
-            return doub;
-        }
-
-        public void setDoub(String doub) {
-            this.doub = doub;
-        }
-
-        public String getStrTime() {
-            return strTime;
-        }
-
-        public void setStrTime(String strTime) {
-            this.strTime = strTime;
-        }
     }
-
+    @Data
+    @Accessors(chain = true)
     static class DemoItem {
         @CheckValue("子对象字符")
         private String strItem;
         @CheckValue(value = "子对象数字", flag = {"P", "E"}, isOptional = true)
         private Integer inteItem;
-
-        public String getStrItem() {
-            return strItem;
-        }
-
-        public void setStrItem(String strItem) {
-            this.strItem = strItem;
-        }
-
-        public Integer getInteItem() {
-            return inteItem;
-        }
-
-        public void setInteItem(Integer inteItem) {
-            this.inteItem = inteItem;
-        }
     }
 }

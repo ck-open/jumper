@@ -1,6 +1,5 @@
 package com.ck.check_bean;
 
-import com.alibaba.fastjson.JSONObject;
 import com.ck.check_bean.annotation.CheckValue;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
