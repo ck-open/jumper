@@ -1,8 +1,6 @@
 package com.ck.check_bean;
 
 import com.ck.check_bean.annotation.CheckValue;
-import lombok.val;
-
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
