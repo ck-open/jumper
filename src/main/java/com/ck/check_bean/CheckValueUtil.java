@@ -22,7 +22,7 @@ public final class CheckValueUtil {
      * @return
      */
     public static List<CheckResult> checkBeanFieldIsNotNull(Object o) {
-        return checkBeanFieldIsNotNull(o, null, null, null, null);
+        return checkBeanFieldIsNotNull(o, null);
     }
 
     /**
@@ -33,103 +33,150 @@ public final class CheckValueUtil {
      * @return
      */
     public static List<CheckResult> checkBeanFieldIsNotNull(Object o, String flag) {
-        return checkBeanFieldIsNotNull(o, null, null, null, flag);
-    }
+        Objects.requireNonNull(o, "检查的目标对象不能为空");
 
-    /**
-     * 递归非空与正则校验
-     *
-     * @param o        校验的对象
-     * @param fields   需要校验的参数列表，例如：BaseRequestDto.orderId
-     * @param regexMap 正则字典：key为 ClassSimpleNem.FieldNme  例如：BaseRequestDto.orderId
-     * @return
-     */
-    public static List<CheckResult> checkBeanFieldIsNotNull(Object o, List<String> fields, Map<String, String> fieldNames, Map<String, String> regexMap) {
-        return checkBeanFieldIsNotNull(o, fields, regexMap, fieldNames, null);
-    }
-
-    /**
-     * 递归非空与正则校验
-     *
-     * @param o          校验的对象
-     * @param fields     需要校验的参数列表，例如：BaseRequestDto.orderId
-     * @param fieldNames 需要校验的参数列表，key：BaseRequestDto.orderId
-     * @param regexMap   正则字典：key为 ClassSimpleNem.FieldNme  例如：BaseRequestDto.orderId
-     * @param flag       自定义是否校验标签
-     * @return
-     */
-    private static List<CheckResult> checkBeanFieldIsNotNull(Object o, List<String> fields, Map<String, String> fieldNames, Map<String, String> regexMap, String flag) {
         List<CheckResult> result = new ArrayList<>();
-        if (fields == null) {
-            fields = new ArrayList<>();
-        }
-        if (fieldNames == null) {
-            fieldNames = new HashMap<>();
-        }
-        if (regexMap == null) {
-            regexMap = new HashMap<>();
-        }
-
         Class cla = o.getClass();
         for (Field field : getFields(cla)) {
-            String key = cla.getSimpleName() + "." + field.getName();
-
-            String msg = key;
-            String regex = regexMap.get(key);
             CheckValue checkValue = field.getAnnotation(CheckValue.class);
-            if (checkValue != null) {
-                msg = fieldNames.containsKey(key) ? fieldNames.get(key) : !"".equalsIgnoreCase(checkValue.value()) ? checkValue.value() : msg;
-                if (regex == null) regex = checkValue.regexp();
-            }
+            if (checkValue == null) continue;
 
-            // 无注解 也未配置 则跳过校验
-            if (fields.contains(key) || checkValue != null) {
-                Object val = getVal(field, o, key);
-                if (val != null && "".equals(val.toString().trim())) {
-                    val = null;
-                }
+            String key = cla.getSimpleName() + "." + field.getName();
+            Object val = getVal(field, o, key);
 
-                CheckResult checkResult = new CheckResult().setCla(cla).setField(field).setValue(o);
+            CheckResult checkResult = new CheckResult().setCla(cla).setField(field).setValue(o);
 
-                if (val == null) {
-                    if (checkValue != null && !"".equalsIgnoreCase(checkValue.defaultValue())) {
-                        setVal(field, o, checkValue.defaultValue(), key);
+            CheckItem checkItem = CheckItem.build(checkValue);
+            checkItem.setValue(Optional.ofNullable(checkItem.getValue()).orElse(key));
 
-                        // 未注解 或 必传属性 或 flag标记中包含指定的标记则校验非空 否则跳过
-                    } else if (checkValue == null || !checkValue.isOptional()
-                            || (flag != null && !"".equals(flag.trim()) && checkValue.flag().length > 0 && Arrays.asList(checkValue.flag()).contains(flag))) {
-                        result.add(checkResult.setMessage(msg + "为空"));
+            val = checkValueIsNotNull(val, checkItem, flag, checkResult);
+
+            if (checkResult.isSucceed())
+                result.add(checkResult);
+
+            if (isBasicType(val)) {
+                setVal(field, o, (String) val, key);
+            } else if (val != null && checkValue.isChild()) {
+                // 复杂类型进行递归
+                if (Collection.class.isAssignableFrom(val.getClass())) {
+                    for (Object item : (Collection) val) {
+                        result.addAll(checkBeanFieldIsNotNull(item, flag));
+                    }
+                } else if (val.getClass().isArray()) {   // 参数是数组
+                    for (Object item : (Object[]) val) {
+                        result.addAll(checkBeanFieldIsNotNull(item, flag));
+                    }
+                } else if (Map.class.isAssignableFrom(val.getClass())) {
+                    for (Object item : ((Map) val).values()) {
+                        result.addAll(checkBeanFieldIsNotNull(item, flag));
                     }
                 } else {
-                    if (!checkRegex(val, regex)) {
-                        checkResult.setRegexp(regex);
-                        result.add(checkResult.setMessage(msg + "规则不符"));
-                        continue;
-                    } else if (checkValue != null) {
-                        if (checkValue.max() != -999999999 && !checkMax(checkValue.max(), val, key)) {
-                            checkResult.setMax(checkValue.max());
-                            result.add(checkResult.setMessage(msg + String.format("大于限定值[%s]", checkValue.max())));
-                            continue;
-                        }
-                        if (checkValue.min() != -999999999 && !checkMin(checkValue.max(), val, key)) {
-                            checkResult.setMin(checkValue.min());
-                            result.add(checkResult.setMessage(msg + String.format("小于限定值[%s]", checkValue.min())));
-                            continue;
-                        }
-                    }
-
-                    // 是否递归校验
-                    if (!isBasicType(val)) {
-                        if (checkValue != null && !checkValue.isChild()) {
-                            continue;
-                        }
-                        result.addAll(recursion(val, fields, fieldNames, regexMap, flag));
-                    }
+                    result.addAll(checkBeanFieldIsNotNull(val, flag));
                 }
             }
         }
         return result;
     }
+
+    /**
+     * 递归非空与正则校验
+     *
+     * @param o    校验的对象
+     * @param flag 自定义是否校验标签
+     * @return
+     */
+    public static List<CheckResult> checkBeanFieldIsNotNull(Map<String, Object> o, String flag, CheckItem checkItem) {
+        Objects.requireNonNull(o, "检查的目标对象不能为空");
+        Objects.requireNonNull(checkItem, "检查的条件对象不能为空");
+        Objects.requireNonNull(checkItem.getCheckItemChild(), "检查的条件对象不能为空");
+
+        List<CheckResult> result = new ArrayList<>();
+
+        o.forEach((key, val) -> {
+            if (checkItem.getCheckItemChild().containsKey(key)) {
+                CheckItem checkItemTemp = checkItem.getCheckItemChild().get(key);
+                CheckResult checkResult = new CheckResult().setValue(val);
+                val = checkValueIsNotNull(val, checkItemTemp, flag, checkResult);
+
+                if (checkResult.isSucceed())
+                    result.add(checkResult);
+
+                if (isBasicType(val)) {
+                    o.put(key, val);
+                } else if (val != null && checkItemTemp.isChild()) {
+                    // 复杂类型进行递归
+                    if (Collection.class.isAssignableFrom(val.getClass())) {
+                        for (Object item : (Collection) val) {
+                            if (Map.class.isAssignableFrom(item.getClass())) {
+                                result.addAll(checkBeanFieldIsNotNull((Map<String, Object>) item, flag, checkItemTemp));
+                            }
+                        }
+                    } else if (val.getClass().isArray()) {   // 参数是数组
+                        for (Object item : (Object[]) val) {
+                            if (Map.class.isAssignableFrom(item.getClass())) {
+                                result.addAll(checkBeanFieldIsNotNull((Map<String, Object>) item, flag, checkItemTemp));
+                            }
+                        }
+                    } else if (Map.class.isAssignableFrom(val.getClass())) {
+                        for (Object item : ((Map) val).values()) {
+                            if (Map.class.isAssignableFrom(item.getClass())) {
+                                result.addAll(checkBeanFieldIsNotNull((Map<String, Object>) item, flag, checkItemTemp));
+                            }
+                        }
+                    } else {
+                        result.addAll(checkBeanFieldIsNotNull(val, flag));
+                    }
+                }
+            }
+        });
+
+        return result;
+    }
+
+
+    /**
+     * 非空与正则校验
+     *
+     * @param val         校验的值
+     * @param checkItem   配置的校验规则
+     * @param flag        自定义是否校验标签
+     * @param checkResult 校验结果信息对象
+     * @return 返回校验后的值（配置有默认值则返回默认值）
+     */
+    private static Object checkValueIsNotNull(Object val, CheckItem checkItem, String flag, CheckResult checkResult) {
+        if (checkItem != null) {
+            Objects.requireNonNull(checkItem.getValue(), "非空规则校验参数名称必须指定不能为空");
+            Objects.requireNonNull(checkResult, "校验结果收集器不能为空");
+            if (val != null && "".equals(val.toString().trim())) {
+                val = null;
+            }
+
+            checkResult.setRegexp(checkItem.getRegexp());
+            if (val == null) {
+                if (!"".equalsIgnoreCase(checkItem.getDefaultValue())) {
+                    val = checkItem.getDefaultValue();
+                } else if (!checkItem.isOptional()  //  必传属性 或 flag标记中包含指定的标记则校验非空 否则跳过
+                        || Arrays.asList(checkItem.getFlag()).contains(flag)) {
+                    checkResult.setMessage(checkItem.getValue() + "为空");
+                }
+            } else {
+                if (!checkRegex(val, checkItem.getRegexp())) {
+                    checkResult.setRegexp(checkItem.getRegexp()).setMessage(checkItem.getValue() + "规则不符");
+                } else {
+                    if (checkItem.getMax() != null && !checkMax(checkItem.getMax(), val, checkItem.getValue())) {
+                        checkResult.setMax(checkItem.getMax()).setMessage(String.format("[%s]大于限定值[%s]", checkItem.getValue(), checkItem.getMax()));
+                    }
+                    if (checkItem.getMin() != null && !checkMin(checkItem.getMin(), val, checkItem.getValue())) {
+                        checkResult.setMin(checkItem.getMin()).setMessage(String.format("[%s]小于限定值[%s]", checkItem.getValue(), checkItem.getMin()));
+                    }
+                }
+            }
+        }
+        if (checkResult.getMessage() == null)
+            checkResult.setSucceed(true);
+        return val;
+    }
+
 
     /**
      * 获取属性值
@@ -208,35 +255,6 @@ public final class CheckValueUtil {
     }
 
     /**
-     * 递归属性值
-     *
-     * @param val
-     * @param checkParameters
-     * @param regex
-     * @return
-     */
-    private static List<CheckResult> recursion(Object val, List<String> checkParameters, Map<String, String> fieldNames, Map<String, String> regex, String flag) {
-        List<CheckResult> result = new ArrayList<>();
-        // 参数是集合
-        if (Collection.class.isAssignableFrom(val.getClass())) {
-            for (Object item : (Collection) val) {
-                result.addAll(checkBeanFieldIsNotNull(item, checkParameters, fieldNames, regex, flag));
-            }
-        } else if (val.getClass().isArray()) {   // 参数是数组
-            for (Object item : (Object[]) val) {
-                result.addAll(checkBeanFieldIsNotNull(item, checkParameters, fieldNames, regex, flag));
-            }
-        } else if (Map.class.isAssignableFrom(val.getClass())) {
-            for (Object item : ((Map) val).values()) {
-                result.addAll(checkBeanFieldIsNotNull(item, checkParameters, fieldNames, regex, flag));
-            }
-        } else {
-            result.addAll(checkBeanFieldIsNotNull(val, checkParameters, fieldNames, regex, flag));
-        }
-        return result;
-    }
-
-    /**
      * 判断对象是否基本类型或常见类型
      */
     public static boolean isBasicType(Object o) {
@@ -264,7 +282,7 @@ public final class CheckValueUtil {
      * @return
      */
     public static boolean checkRegex(Object val, String regex) {
-        if (val != null && regex != null && !"".equals(regex.trim()) && isBasicType(val)) {
+        if (regex != null && !"".equals(regex.trim()) && isBasicType(val)) {
             return val.toString().matches(regex);
         }
         return true;
@@ -302,109 +320,4 @@ public final class CheckValueUtil {
             return false;
         }
     }
-
-    /**
-     * 打印对象属性列表
-     */
-    public static void printParameters(Class cls) {
-        if (cls == null) {
-            System.out.println("类型为null");
-        }
-
-        for (Field field : getFields(cls)) {
-            CheckValue checkValue = field.getAnnotation(CheckValue.class);
-            String msg = checkValue == null || checkValue.value() == null || "".equalsIgnoreCase(checkValue.value()) ? "" : "  // " + checkValue.value();
-            System.out.println("\"" + cls.getSimpleName() + "." + field.getName() + "\", " + msg);
-        }
-    }
-
-
-    public static void main(String[] args) {
-        Demo demo = new Demo();
-        demo.setItem(new DemoItem());
-
-        demo.setDoub("-25.67");
-        demo.setStrTime("2022-08-04 18:42:35");
-        List<CheckResult> msg = CheckValueUtil.checkBeanFieldIsNotNull(demo, "S");
-
-        System.out.println(msg);
-
-    }
-
-    static class Demo {
-        @CheckValue(value = "测试字符串", flag = {"P"})
-        private String str;
-        @CheckValue(value = "测试日期", regexp = "^(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2})$", flag = {"P"})
-        private String strTime;
-        @CheckValue("测试数字")
-        private Integer inte;
-        @CheckValue(value = "测试小数", max = 50, min = -25.66)
-        private String doub;
-        @CheckValue(value = "测试子对象", flag = {"P", "E"}, isChild = true)
-        private DemoItem item;
-
-        public String getStr() {
-            return str;
-        }
-
-        public void setStr(String str) {
-            this.str = str;
-        }
-
-        public Integer getInte() {
-            return inte;
-        }
-
-        public void setInte(Integer inte) {
-            this.inte = inte;
-        }
-
-        public DemoItem getItem() {
-            return item;
-        }
-
-        public void setItem(DemoItem item) {
-            this.item = item;
-        }
-
-        public String getDoub() {
-            return doub;
-        }
-
-        public void setDoub(String doub) {
-            this.doub = doub;
-        }
-
-        public String getStrTime() {
-            return strTime;
-        }
-
-        public void setStrTime(String strTime) {
-            this.strTime = strTime;
-        }
-    }
-
-    static class DemoItem {
-        @CheckValue("子对象字符")
-        private String strItem;
-        @CheckValue(value = "子对象数字", flag = {"P", "E"}, isOptional = true)
-        private Integer inteItem;
-
-        public String getStrItem() {
-            return strItem;
-        }
-
-        public void setStrItem(String strItem) {
-            this.strItem = strItem;
-        }
-
-        public Integer getInteItem() {
-            return inteItem;
-        }
-
-        public void setInteItem(Integer inteItem) {
-            this.inteItem = inteItem;
-        }
-    }
-
 }
