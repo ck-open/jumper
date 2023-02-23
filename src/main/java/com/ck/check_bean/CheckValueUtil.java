@@ -106,7 +106,7 @@ public final class CheckValueUtil {
                 } else if (val != null && checkItemTemp.isChild()) {
                     // 复杂类型进行递归
                     if (Collection.class.isAssignableFrom(val.getClass()) || val.getClass().isArray()) {
-                        Collection valTemp = null;
+                        Collection valTemp;
                         if (val.getClass().isArray()) {
                             valTemp = Collections.singletonList(val);
                         } else {
