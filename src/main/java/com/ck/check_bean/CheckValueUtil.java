@@ -51,7 +51,7 @@ public final class CheckValueUtil {
 
             val = checkValueIsNotNull(val, checkItem, flag, checkResult);
 
-            if (checkResult.isSucceed())
+            if (!checkResult.isSucceed())
                 result.add(checkResult);
 
             if (isBasicType(val)) {
@@ -98,7 +98,7 @@ public final class CheckValueUtil {
                 CheckResult checkResult = new CheckResult().setValue(val);
                 val = checkValueIsNotNull(val, checkItemTemp, flag, checkResult);
 
-                if (checkResult.isSucceed())
+                if (!checkResult.isSucceed())
                     result.add(checkResult);
 
                 if (isBasicType(val)) {
