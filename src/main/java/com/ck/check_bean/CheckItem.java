@@ -5,9 +5,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.logging.Logger;
 
 @Data
@@ -27,7 +25,7 @@ public class CheckItem {
                 .setRegexp(checkValue.regexp())
                 .setDefaultValue(checkValue.defaultValue())
                 .setOptional(checkValue.isOptional())
-                .setFlag(checkValue.flag())
+                .setFlag(Arrays.asList(checkValue.flag()))
                 .setChild(checkValue.isChild())
                 .setMax(checkValue.max() == -999999999 ? null : checkValue.max())
                 .setMin(checkValue.min() == -999999999 ? null : checkValue.min())
@@ -115,7 +113,7 @@ public class CheckItem {
      *
      * @return
      */
-    private String[] flag = {};
+    private List<String> flag = new ArrayList<>();
 
     /**
      * 配置化使用时用于Map层级验证条件用

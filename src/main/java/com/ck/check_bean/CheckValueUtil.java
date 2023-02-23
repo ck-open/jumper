@@ -155,7 +155,7 @@ public final class CheckValueUtil {
                 if (checkItem.getDefaultValue() != null && !"".equalsIgnoreCase(checkItem.getDefaultValue())) {
                     val = checkItem.getDefaultValue();
                 } else if (!checkItem.isOptional()  //  必传属性 或 flag标记中包含指定的标记则校验非空 否则跳过
-                        || Arrays.asList(checkItem.getFlag()).contains(flag)) {
+                        || checkItem.getFlag().contains(flag)) {
                     checkResult.setMessage(checkItem.getValue() + "为空");
                 }
             } else {

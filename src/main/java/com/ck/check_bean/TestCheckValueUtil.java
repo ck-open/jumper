@@ -7,6 +7,7 @@ import lombok.experimental.Accessors;
 
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -45,16 +46,17 @@ public class TestCheckValueUtil {
 
         CheckItem checkItem = new CheckItem();
         checkItem.setCheckItemChild(new HashMap<>());
-        checkItem.getCheckItemChild().put("str",new CheckItem().setValue("测试字符串").setFlag(new String[]{"P"}));
-        checkItem.getCheckItemChild().put("inte",new CheckItem().setValue("测试数字").setFlag(new String[]{"P"}));
-        checkItem.getCheckItemChild().put("strTime",new CheckItem().setValue("测试日期").setFlag(new String[]{"P"}).setRegexp("^(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2})$"));
+        checkItem.getCheckItemChild().put("str",new CheckItem().setValue("测试字符串").setFlag(Collections.singletonList("P")));
+        checkItem.getCheckItemChild().put("inte",new CheckItem().setValue("测试数字").setFlag(Collections.singletonList("P")));
+        checkItem.getCheckItemChild().put("strTime",new CheckItem().setValue("测试日期").setFlag(Collections.singletonList("P")).setRegexp("^(\\d{4}-\\d{2}-\\d{2}\\s\\d{2}:\\d{2}:\\d{2})$"));
         checkItem.getCheckItemChild().put("doub",new CheckItem().setValue("测试小数").setMax(50.00).setMin(-25.66));
-        checkItem.getCheckItemChild().put("item",new CheckItem().setValue("测试子对象").setFlag(new String[]{"P", "E"}).setChild(true).setCheckItemChild(new HashMap<>()));
-        checkItem.getCheckItemChild().put("items",new CheckItem().setValue("测试子对象列表").setFlag(new String[]{"P", "E"}).setChild(true).setCheckItemChild(new HashMap<>()));
+        checkItem.getCheckItemChild().put("item",new CheckItem().setValue("测试子对象").setFlag(Arrays.asList("P","E")).setChild(true).setCheckItemChild(new HashMap<>()));
+        checkItem.getCheckItemChild().put("items",new CheckItem().setValue("测试子对象列表").setFlag(Arrays.asList("P","E")).setChild(true).setCheckItemChild(new HashMap<>()));
 
         checkItem.getCheckItemChild().get("item").getCheckItemChild().put("strItem",new CheckItem().setValue("子对象字符"));
         checkItem.getCheckItemChild().get("items").getCheckItemChild().put("inteItem",new CheckItem().setValue("子对象数字"));
         List<CheckResult> checkResult = CheckValueUtil.checkBeanFieldIsNotNull(JSONObject.parseObject(JSONObject.toJSONString(demo)),null,checkItem);
+        CheckItem checkItem1 = CheckItem.build(JSONObject.parseObject(JSONObject.toJSONString(checkItem)));
 
         System.out.println(msg);
 
