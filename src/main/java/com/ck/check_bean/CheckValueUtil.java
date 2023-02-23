@@ -1,9 +1,11 @@
 package com.ck.check_bean;
 
 import com.ck.check_bean.annotation.CheckValue;
+import lombok.val;
 
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 
@@ -44,7 +46,7 @@ public final class CheckValueUtil {
             String key = cla.getSimpleName() + "." + field.getName();
             Object val = getVal(field, o, key);
 
-            CheckResult checkResult = new CheckResult().setCla(cla).setField(field).setValue(o);
+            CheckResult checkResult = new CheckResult().setCla(cla).setField(field).setValue(val);
 
             CheckItem checkItem = CheckItem.build(checkValue);
             checkItem.setValue(Optional.ofNullable(checkItem.getValue()).orElse(key));
@@ -55,7 +57,7 @@ public final class CheckValueUtil {
                 result.add(checkResult);
 
             if (isBasicType(val)) {
-                setVal(field, o, (String) val, key);
+                setVal(field, o, val, key);
             } else if (val != null && checkValue.isChild()) {
                 // 复杂类型进行递归
                 if (Collection.class.isAssignableFrom(val.getClass())) {
@@ -92,9 +94,9 @@ public final class CheckValueUtil {
 
         List<CheckResult> result = new ArrayList<>();
 
-        o.forEach((key, val) -> {
+        checkItem.getCheckItemChild().forEach((key, checkItemTemp) -> {
             if (checkItem.getCheckItemChild().containsKey(key)) {
-                CheckItem checkItemTemp = checkItem.getCheckItemChild().get(key);
+                Object val = o.get(key);
                 CheckResult checkResult = new CheckResult().setValue(val);
                 val = checkValueIsNotNull(val, checkItemTemp, flag, checkResult);
 
@@ -105,24 +107,23 @@ public final class CheckValueUtil {
                     o.put(key, val);
                 } else if (val != null && checkItemTemp.isChild()) {
                     // 复杂类型进行递归
-                    if (Collection.class.isAssignableFrom(val.getClass())) {
-                        for (Object item : (Collection) val) {
-                            if (Map.class.isAssignableFrom(item.getClass())) {
+                    if (Collection.class.isAssignableFrom(val.getClass()) || val.getClass().isArray()) {
+                        Collection valTemp = null;
+                        if (val.getClass().isArray()) {
+                            valTemp = Collections.singletonList(val);
+                        } else {
+                            assert val instanceof Collection;
+                            valTemp = (Collection) val;
+                        }
+
+                        for (Object item : valTemp) {
+                            if (!isBasicType(item) && Map.class.isAssignableFrom(item.getClass())) {
                                 result.addAll(checkBeanFieldIsNotNull((Map<String, Object>) item, flag, checkItemTemp));
                             }
                         }
-                    } else if (val.getClass().isArray()) {   // 参数是数组
-                        for (Object item : (Object[]) val) {
-                            if (Map.class.isAssignableFrom(item.getClass())) {
-                                result.addAll(checkBeanFieldIsNotNull((Map<String, Object>) item, flag, checkItemTemp));
-                            }
-                        }
+
                     } else if (Map.class.isAssignableFrom(val.getClass())) {
-                        for (Object item : ((Map) val).values()) {
-                            if (Map.class.isAssignableFrom(item.getClass())) {
-                                result.addAll(checkBeanFieldIsNotNull((Map<String, Object>) item, flag, checkItemTemp));
-                            }
-                        }
+                        result.addAll(checkBeanFieldIsNotNull((Map<String, Object>) val, flag, checkItemTemp));
                     } else {
                         result.addAll(checkBeanFieldIsNotNull(val, flag));
                     }
@@ -153,7 +154,7 @@ public final class CheckValueUtil {
 
             checkResult.setRegexp(checkItem.getRegexp());
             if (val == null) {
-                if (!"".equalsIgnoreCase(checkItem.getDefaultValue())) {
+                if (checkItem.getDefaultValue() != null && !"".equalsIgnoreCase(checkItem.getDefaultValue())) {
                     val = checkItem.getDefaultValue();
                 } else if (!checkItem.isOptional()  //  必传属性 或 flag标记中包含指定的标记则校验非空 否则跳过
                         || Arrays.asList(checkItem.getFlag()).contains(flag)) {
@@ -202,16 +203,18 @@ public final class CheckValueUtil {
      * @param defaultValue
      * @param fieldName
      */
-    private static void setVal(Field field, Object o, String defaultValue, String fieldName) {
+    private static void setVal(Field field, Object o, Object defaultValue, String fieldName) {
         try {
             if (field.getType().getSimpleName().equals(String.class.getSimpleName())) {
                 field.set(o, defaultValue);
             } else if (field.getType().getSimpleName().equals(Integer.class.getSimpleName())) {
-                field.set(o, Integer.valueOf(defaultValue));
+                field.set(o, Integer.valueOf(String.valueOf(defaultValue)));
             } else if (field.getType().getSimpleName().equals(Double.class.getSimpleName())) {
-                field.set(o, Double.valueOf(defaultValue));
+                field.set(o, Double.valueOf(String.valueOf(defaultValue)));
             } else if (field.getType().getSimpleName().equals(BigDecimal.class.getSimpleName())) {
-                field.set(o, new BigDecimal(defaultValue));
+                field.set(o, new BigDecimal(String.valueOf(defaultValue)));
+            } else if (field.getType().getSimpleName().equals(BigInteger.class.getSimpleName())) {
+                field.set(o, new BigInteger(String.valueOf(defaultValue)));
             }
         } catch (Exception e) {
             throw new RuntimeException(String.format("为属性[%s]赋默认值[%s]异常, 需要的类型为[%s]！", fieldName, defaultValue, field.getType().getSimpleName()));
