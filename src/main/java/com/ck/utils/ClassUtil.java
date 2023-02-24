@@ -184,10 +184,9 @@ public final class ClassUtil {
                 if (method != null) {
                     MethodType methodType = MethodType.methodType(method.getReturnType(), entityClass);
 
-                    //方法名叫做:getSecretLevel  转换为 SFunction function interface对象
+                    //方法名叫做:getFieldName  转换为 invokedType function interface对象
                     final CallSite site = LambdaMetafactory.altMetafactory(lookup,
                             "invoke",
-//                    MethodType.methodType(SFunction.class),
                             MethodType.methodType(invokedType),
                             methodType,
                             lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
