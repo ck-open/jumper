@@ -1,6 +1,7 @@
 package com.ck.check_bean;
 
 import com.ck.check_bean.annotation.CheckValue;
+
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -94,7 +95,7 @@ public final class CheckValueUtil {
 
         checkItem.getCheckItemChild().forEach((key, checkItemTemp) -> {
             if (checkItem.getCheckItemChild().containsKey(key)) {
-                Object val = o.get(key);  // TODO 如果值为list 怎么处理
+                Object val = o.get(key);
                 CheckResult checkResult = new CheckResult().setValue(val);
                 val = checkValueIsNotNull(val, checkItemTemp, flag, checkResult);
 
