@@ -1,0 +1,26 @@
+本包下完全是 QRCode.jar 包内数据   纯属闲的不想引入jar包 所以将jar包反编译成代码
+
+也可以执行Maven 命令将jar包放入本地仓库
+    mvn install:install-file -Dfile=e:\QRCode.jar -DgroupId=QRCode -DartifactId=QRCode -Dversion=3.0 -Dpackaging=jar
+
+
+idea 编译时 不会把swetake.util.qrcode_data数据包编译到class文件包中需要注意
+        可以手动将包放入class目录中
+        也可以在POM中指定编译
+                <build>
+                        ...
+                        <resources>
+                            <resource>
+                                <directory>src/main/java</directory>
+                                <includes>
+                                    <include>**/qrcode_data/*.dat</include> <!-- 指定编译时 将二维码生成工具的数据文件编译进class目录 -->
+                                </includes>
+                            </resource>
+                            <resource>
+                                <directory>src/main/resources</directory>
+                                <includes>
+                                    <include>**/*</include>
+                                </includes>
+                            </resource>
+                        </resources>
+                    </build>
