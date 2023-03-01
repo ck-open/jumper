@@ -109,13 +109,9 @@ public class Tree<T> implements Cloneable {
      */
     public void createTree(List<Tree<T>> trees) {
         if (trees != null && !trees.isEmpty()) {
-            Map<Integer, List<Tree>> treeMap = new HashMap();
-            trees.stream().forEach(item -> {
-                List<Tree> temp = treeMap.get(item.getParentId());
-                if (temp == null) {
-                    temp = new ArrayList<>();
-                    treeMap.put(item.getParentId(), temp);
-                }
+            Map<Integer, List<Tree<T>>> treeMap = new HashMap<>();
+            trees.forEach(item -> {
+                List<Tree<T>> temp = treeMap.computeIfAbsent(item.getParentId(), k -> new ArrayList<>());
                 temp.add(item);
             });
             this.nodeTier = this.nodeTier == null ? 1 : this.nodeTier;
@@ -129,11 +125,11 @@ public class Tree<T> implements Cloneable {
      * @param tree    根节点
      * @param treeMap 节点列表  Map<父节点ID,List<Tree>>
      */
-    private void recursionTree(Tree tree, Map<Integer, List<Tree>> treeMap) {
-        List<Tree> children = treeMap.get(tree.getId());
+    private void recursionTree(Tree<T> tree, Map<Integer, List<Tree<T>>> treeMap) {
+        List<Tree<T>> children = treeMap.get(tree.getId());
         if (children != null && !children.isEmpty()) {
             tree.setChildren(children);  // 将子节点列表绑定到父节点  并递归每个节点
-            treeMap.get(tree.getId()).stream().forEach(item -> {
+            treeMap.get(tree.getId()).forEach(item -> {
                 item.setNodeTier(tree.getNodeTier() + 1); // 设置层级数
                 recursionTree(item, treeMap);
             });
@@ -148,8 +144,7 @@ public class Tree<T> implements Cloneable {
     public Map<Integer, Tree<T>> lastNodesMap() {
         List<Tree<T>> trees = lastNodes(this, new ArrayList<>());
         Map<Integer, Tree<T>> treeMap = new HashMap<>();
-        if (trees != null)
-            trees.stream().forEach(item -> treeMap.put(item.getId(), item));
+        trees.forEach(item -> treeMap.put(item.getId(), item));
         return treeMap;
     }
 
@@ -161,8 +156,7 @@ public class Tree<T> implements Cloneable {
     public Map<String, Tree<T>> lastNodesMapOfNodeName() {
         List<Tree<T>> trees = lastNodes(this, new ArrayList<>());
         Map<String, Tree<T>> treeMap = new HashMap<>();
-        if (trees != null)
-            trees.stream().forEach(item -> treeMap.put(item.getNodeName(), item));
+        trees.forEach(item -> treeMap.put(item.getNodeName(), item));
         return treeMap;
     }
 
@@ -200,7 +194,7 @@ public class Tree<T> implements Cloneable {
      * @param dataMap<TreeID, T>
      */
     public void addNodeData(Map<Integer, T> dataMap) {
-        for (Tree item : this.lastNodes()) {
+        for (Tree<T> item : this.lastNodes()) {
             item.setNodeData(dataMap.get(item.getId()));
         }
     }
@@ -225,7 +219,7 @@ public class Tree<T> implements Cloneable {
      */
     private List<Tree<T>> getNodeListByTier(Tree<T> tree, Integer tier, List<Tree<T>> nodes) {
         if (tree.getNodeTier() < tier && tree.getChildren() != null && !tree.getChildren().isEmpty()) {
-            tree.getChildren().stream().forEach(item -> getNodeListByTier(item, tier, nodes));
+            tree.getChildren().forEach(item -> getNodeListByTier(item, tier, nodes));
         } else if (tree.getNodeTier() != null && tree.getNodeTier().equals(tier)) {
             nodes.add(tree);
         }
