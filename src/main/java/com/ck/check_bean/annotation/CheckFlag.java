@@ -16,5 +16,5 @@ public @interface CheckFlag {
      *
      * @return
      */
-    String value() default "";
+    String value();
 }
