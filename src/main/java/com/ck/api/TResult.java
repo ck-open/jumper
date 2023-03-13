@@ -27,13 +27,13 @@ public class TResult<T> implements Serializable {
     }
 
     public static <T> TResult<T> build(Integer status, String msg, T data) {
-        return new TResult<T>().setStatus(status).setMsg(msg).setData(data);
+        return new TResult<T>().setStatus(status).setMessage(msg).setData(data);
     }
 
 
     private Integer status = 1;
 
-    private String msg;
+    private String message;
 
     private String time = TimeUtil.parseDateToString_s(new Date());
 
