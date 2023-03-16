@@ -30,6 +30,10 @@ public class TResult<T> implements Serializable {
         return new TResult<T>().setStatus(status).setMessage(msg).setData(data);
     }
 
+    public static <T> TResult<T> ok(T data) {
+        return new TResult<T>().setStatus(1).setMessage("成功").setData(data);
+    }
+
 
     private Integer status = 1;
 
