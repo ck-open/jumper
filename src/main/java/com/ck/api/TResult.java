@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.ResourceBundle;
 
 /**
  * 返回结果信息
@@ -21,8 +22,30 @@ import java.util.Date;
 @Slf4j
 @Data
 @Accessors(chain = true)
-@NoArgsConstructor
 public class TResult<T> implements Serializable {
+
+    private Integer status = 1;
+
+    private String message;
+
+    private String time = TimeUtil.parseDateToString_s(new Date());
+
+    private T data;
+
+    public TResult(){
+    }
+
+    @Override
+    public String toString() {
+        return "TResult{" +
+                "status=" + status +
+                ", message='" + message + '\'' +
+                ", time='" + time + '\'' +
+                ", data=" + data +
+                '}';
+    }
+
+
 
     public static <T> TResult<T> build(Integer status, String msg) {
         return build(status, msg, null);
@@ -35,16 +58,6 @@ public class TResult<T> implements Serializable {
     public static <T> TResult<T> ok(T data) {
         return new TResult<T>().setStatus(1).setMessage("成功").setData(data);
     }
-
-
-    private Integer status = 1;
-
-    private String message;
-
-    private String time = TimeUtil.parseDateToString_s(new Date());
-
-    private T data;
-
 
     /**
      * 将异常信息按照统一报文格式写出
