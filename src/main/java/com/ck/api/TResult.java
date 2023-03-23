@@ -151,7 +151,7 @@ public class TResult<T> implements Serializable {
             case "HttpMessageNotReadableException":
             case "TypeMismatchException":
             case "MissingServletRequestParameterException":
-                return build(4000, "bad_request");
+                return build(4000, "bad_request(参数结构错误无法解析)");
             case "NoHandlerFoundException":
             case "ResponseStatusException":
                 return build(4004, "not_found");
