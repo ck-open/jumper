@@ -161,13 +161,14 @@ public class TResult<T> implements Serializable {
                 return build(4006, "media_type_not_acceptable");
             case "MethodArgumentNotValidException":
                 return build(1001, "方法参数无效");
+            case "IllegalArgumentException":
+                return build(1001, "参数错误");
             case "OpenSignatureException":
                 if ("too_many_requests".equalsIgnoreCase(message)) {
                     return build(4029, "too_many_requests");
                 } else {
                     return build(2013, "signature_denied");
                 }
-            case "IllegalArgumentException": //参数错误
             case "OpenAlertException":
             default:
                 return build(1001, "alert");
