@@ -15,7 +15,7 @@ import java.util.function.Function;
  * @author cyk
  * @since 2021-10-01
  */
-public final class FunctionUtil implements Serializable {
+public final class FunctionUtils implements Serializable {
 
     /**
      * 根据当前线程缓存SerializedLambda对象
@@ -73,7 +73,7 @@ public final class FunctionUtil implements Serializable {
         }
         if (cl == null) {
             // 线程类加载器获取失败使用当前类加载器.
-            cl = FunctionUtil.class.getClassLoader();
+            cl = FunctionUtils.class.getClassLoader();
             if (cl == null) {
                 // getClassLoader() returning null indicates the bootstrap ClassLoader
                 try {

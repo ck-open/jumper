@@ -1,7 +1,7 @@
 package com.ck.http_client;
 
 
-import com.ck.function.FunctionUtil;
+import com.ck.function.FunctionUtils;
 
 import java.util.Map;
 
@@ -64,8 +64,8 @@ public class NetClientFun {
      * @param func
      * @return
      */
-    public <T, S> String getHeaderValue(FunctionUtil.BaseFunction<? super T, ? extends S> func) {
-        return this.client.getHeaderValue(FunctionUtil.fieldName(func));
+    public <T, S> String getHeaderValue(FunctionUtils.BaseFunction<? super T, ? extends S> func) {
+        return this.client.getHeaderValue(FunctionUtils.fieldName(func));
     }
 
     /**
@@ -75,8 +75,8 @@ public class NetClientFun {
      * @param val
      * @return
      */
-    public <T, S> NetClientFun setHeaders(FunctionUtil.BaseFunction<? super T, ? extends S> func, T val) {
-        this.client.setHeaders(FunctionUtil.fieldName(func), func.apply(val).toString());
+    public <T, S> NetClientFun setHeaders(FunctionUtils.BaseFunction<? super T, ? extends S> func, T val) {
+        this.client.setHeaders(FunctionUtils.fieldName(func), func.apply(val).toString());
         return this;
     }
 
@@ -87,8 +87,8 @@ public class NetClientFun {
      * @param val
      * @return
      */
-    public <T, S> NetClientFun getParameter(FunctionUtil.BaseFunction<? super T, ? extends S> func, T val) {
-        this.client.setParameter(FunctionUtil.fieldName(func), func.apply(val).toString());
+    public <T, S> NetClientFun getParameter(FunctionUtils.BaseFunction<? super T, ? extends S> func, T val) {
+        this.client.setParameter(FunctionUtils.fieldName(func), func.apply(val).toString());
         return this;
     }
 
@@ -100,7 +100,7 @@ public class NetClientFun {
      * @param val
      * @return
      */
-    public <T, S> NetClientFun setContent(FunctionUtil.BaseFunction<? super T, ? extends S> func, T val) {
+    public <T, S> NetClientFun setContent(FunctionUtils.BaseFunction<? super T, ? extends S> func, T val) {
         this.setContent(func.apply(val).toString());
         return this;
     }
