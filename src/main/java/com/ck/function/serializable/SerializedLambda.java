@@ -1,31 +1,29 @@
-package com.ck.function;
+package com.ck.function.serializable;
 
 
 import java.io.Serializable;
 
 /**
-     * 这个类是从 {@link java.lang.invoke.SerializedLambda} 里面 copy 过来的，
-     * 字段信息完全一样
-     * <p>负责将一个支持序列的 Function 序列化为 SerializedLambda</p>
-     *
-     * @author HCL
-     * @since 2018/05/10
-     */
-    @SuppressWarnings("unused")
-    public class SerializedLambda implements Serializable {
+ * 这个类是 {@link java.lang.invoke.SerializedLambda} 的镜像类，
+ *
+ * <p>负责将一个支持序列的 Function 序列化为 SerializedLambda</p>
+ *
+ */
+@SuppressWarnings("unused")
+public class SerializedLambda implements Serializable {
 
-        private static final long serialVersionUID = 8025925345765570181L;
+    private static final long serialVersionUID = 8025925345765570181L;
 
-        private Class<?> capturingClass;
-        private String functionalInterfaceClass;
-        private String functionalInterfaceMethodName;
-        private String functionalInterfaceMethodSignature;
-        private String implClass;
-        private String implMethodName;
-        private String implMethodSignature;
-        private int implMethodKind;
-        private String instantiatedMethodType;
-        private Object[] capturedArgs;
+    private Class<?> capturingClass;
+    private String functionalInterfaceClass;
+    private String functionalInterfaceMethodName;
+    private String functionalInterfaceMethodSignature;
+    private String implClass;
+    private String implMethodName;
+    private String implMethodSignature;
+    private int implMethodKind;
+    private String instantiatedMethodType;
+    private Object[] capturedArgs;
 
     public Class<?> getCapturingClass() {
         return capturingClass;

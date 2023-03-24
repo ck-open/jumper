@@ -64,8 +64,8 @@ public class NetClientFun {
      * @param func
      * @return
      */
-    public <T, S> String getHeaderValue(FunctionUtil.Func<? super T, ? extends S> func) {
-        return this.client.getHeaderValue(FunctionUtil.getFieldName(func));
+    public <T, S> String getHeaderValue(FunctionUtil.BaseFunction<? super T, ? extends S> func) {
+        return this.client.getHeaderValue(FunctionUtil.fieldName(func));
     }
 
     /**
@@ -75,8 +75,8 @@ public class NetClientFun {
      * @param val
      * @return
      */
-    public <T, S> NetClientFun setHeaders(FunctionUtil.Func<? super T, ? extends S> func, T val) {
-        this.client.setHeaders(FunctionUtil.getFieldName(func), func.apply(val).toString());
+    public <T, S> NetClientFun setHeaders(FunctionUtil.BaseFunction<? super T, ? extends S> func, T val) {
+        this.client.setHeaders(FunctionUtil.fieldName(func), func.apply(val).toString());
         return this;
     }
 
@@ -87,8 +87,8 @@ public class NetClientFun {
      * @param val
      * @return
      */
-    public <T, S> NetClientFun getParameter(FunctionUtil.Func<? super T, ? extends S> func, T val) {
-        this.client.setParameter(FunctionUtil.getFieldName(func), func.apply(val).toString());
+    public <T, S> NetClientFun getParameter(FunctionUtil.BaseFunction<? super T, ? extends S> func, T val) {
+        this.client.setParameter(FunctionUtil.fieldName(func), func.apply(val).toString());
         return this;
     }
 
@@ -100,7 +100,7 @@ public class NetClientFun {
      * @param val
      * @return
      */
-    public <T, S> NetClientFun setContent(FunctionUtil.Func<? super T, ? extends S> func, T val) {
+    public <T, S> NetClientFun setContent(FunctionUtil.BaseFunction<? super T, ? extends S> func, T val) {
         this.setContent(func.apply(val).toString());
         return this;
     }

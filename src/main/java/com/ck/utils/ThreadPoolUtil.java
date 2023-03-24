@@ -40,7 +40,7 @@ public abstract class ThreadPoolUtil {
      * @param <T>
      * @param <R>
      */
-    public static <T, R> void run(FunctionUtil.Func<? super T, ? extends R> keyExtractor, T t) {
+    public static <T, R> void run(FunctionUtil.BaseFunction<? super T, ? extends R> keyExtractor, T t) {
         threadPool.execute(() -> keyExtractor.apply(t));
     }
 
@@ -92,7 +92,7 @@ public abstract class ThreadPoolUtil {
      * @param millis       每次循环线程休眠时长/毫秒值
      * @param onOff        循环终止开关
      */
-    public static <T, R> void runWhile(FunctionUtil.Func<? super T, ? extends R> keyExtractor, T t, int millis, Boolean onOff) {
+    public static <T, R> void runWhile(FunctionUtil.BaseFunction<? super T, ? extends R> keyExtractor, T t, int millis, Boolean onOff) {
         threadPool.execute(() -> {
             while (onOff != null && onOff) {
                 keyExtractor.apply(t);
