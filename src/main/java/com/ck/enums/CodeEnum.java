@@ -27,6 +27,6 @@ public interface CodeEnum<C, T extends Enum<T> & CodeEnum<C, T, V>, V> {
      * 获取实例枚举对象
      * @return
      */
-    T get();
+    default T get(){return (T) this;};
 
 }

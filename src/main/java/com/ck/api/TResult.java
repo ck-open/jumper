@@ -3,7 +3,6 @@ package com.ck.api;
 import com.alibaba.fastjson.JSONObject;
 import com.ck.utils.TimeUtil;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
@@ -12,7 +11,6 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.ResourceBundle;
 
 /**
  * 返回结果信息
@@ -46,6 +44,10 @@ public class TResult<T> implements Serializable {
     }
 
 
+
+    public static <T> TResult<T> build(TResultCode code) {
+        return build(code.getCode(), code.getMessage(), null);
+    }
 
     public static <T> TResult<T> build(Integer status, String msg) {
         return build(status, msg, null);
