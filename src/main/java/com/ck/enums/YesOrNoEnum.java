@@ -3,7 +3,7 @@ package com.ck.enums;
 import lombok.Getter;
 
 @Getter
-public enum YesOrNoEnum implements CodeEnum {
+public enum YesOrNoEnum implements CodeEnum<String,YesOrNoEnum,String> {
 
     YES("Y", "是"),
     NO("N", "否");
@@ -27,7 +27,17 @@ public enum YesOrNoEnum implements CodeEnum {
     }
 
     @Override
-    public Object getValue() {
+    public String getValue() {
         return this.code;
+    }
+
+    /**
+     * 获取实例枚举对象
+     *
+     * @return
+     */
+    @Override
+    public YesOrNoEnum get() {
+        return this;
     }
 }

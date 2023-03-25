@@ -12,7 +12,7 @@ import java.util.List;
  */
 @Data
 @Accessors(chain = true)
-public class DictionaryData implements Serializable {
+public class DictionaryData<T> implements Serializable {
 
     private static final long serialVersionUID = 5999791587974140346L;
 
@@ -24,6 +24,8 @@ public class DictionaryData implements Serializable {
     private String code;                                //资源代码
 
     private String name;                                //资源名称
+
+    private T value;                               //资源值
 
     private String level;
 
