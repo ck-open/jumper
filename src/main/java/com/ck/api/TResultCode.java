@@ -6,6 +6,8 @@ import lombok.Getter;
 @Getter
 public enum TResultCode implements CodeEnum<Integer, TResultCode,String> {
 
+    OK(1, "成功"),
+    OPERATE_OK(1, "操作成功"),
     SAVE_OK(1, "保存成功"),
     UPDATE_OK(1, "更新成功"),
     QUERY_OK(1, "查询成功"),

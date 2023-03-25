@@ -45,6 +45,9 @@ public class TResult<T> implements Serializable {
 
 
 
+    public static <T> TResult<T> build(TResultCode code,String message) {
+        return build(code.getCode(), message, null);
+    }
     public static <T> TResult<T> build(TResultCode code) {
         return build(code.getCode(), code.getMessage(), null);
     }
