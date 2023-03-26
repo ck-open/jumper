@@ -384,6 +384,55 @@ public final class ImageUtil {
         return binaryImage;
     }
 
+    /**
+     * 合成图片并添加文字
+     *
+     * @param tempImage
+     *            模版图片
+     * @param mergedImage
+     *            叠加图片
+     * @param left
+     *            叠加图片左边距
+     * @param top
+     *            叠加图片上边距
+     * @param width
+     *            叠加图片宽带
+     * @param height
+     *            叠加图片高度
+     * @param str
+     *            文字
+     * @param font
+     *            文字字体
+     * @param fontLeft
+     *            文字左边距
+     * @param fonTop
+     *            文字上边距
+     * @param outputfile
+     *            最终合成文件
+     * @throws IOException
+     */
+    public static void merged(File tempImage, File mergedImage, int left,
+                              int top, int width, int height, String str, Font font,
+                              int fontLeft, int fonTop, File outputfile) throws IOException {
+        // 加载模版图片
+        BufferedImage imageLocal = ImageIO.read(tempImage);
+        // 加载叠加图片
+        BufferedImage imageCode = ImageIO.read(mergedImage);
+        Graphics2D g = imageLocal.createGraphics();
+        // 在模板上添加叠加图片(地址,左边距,上边距,图片宽度,图片高度,未知)
+        g.drawImage(imageCode, left, top, width, height, null);
+        // 添加文本说明
+        if (str != null) {
+            // 设置文本样式
+            g.setFont(font);
+            g.setColor(Color.RED);
+            g.drawString(str, fontLeft, fonTop);
+        }
+        // 完成模板修改
+        g.dispose();
+        ImageIO.write(imageLocal, "png", outputfile);
+    }
+
     public static void main(String[] args) {
         File file = new File("E:\\222.jpg");
 //        String imagePath = "D:\\图片\\工厂1.jpg";
