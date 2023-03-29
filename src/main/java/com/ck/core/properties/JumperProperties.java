@@ -1,9 +1,8 @@
-package com.ck.core.configuration;
+package com.ck.core.properties;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 
 /**
@@ -16,7 +15,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @Data
 @Accessors(chain = true)
 @ConfigurationProperties("jumper")
-@EnableConfigurationProperties
 public class JumperProperties {
     /**
      * 是否启用文档
