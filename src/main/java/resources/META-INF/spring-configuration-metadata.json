@@ -1,0 +1,9 @@
+{
+  "properties": [
+    {
+      "name": "jumper.enabled",
+      "type": "java.lang.Boolean",
+      "description": "开启 Jumper 支持."
+    }
+  ]
+}
