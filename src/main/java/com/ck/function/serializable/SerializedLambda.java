@@ -6,7 +6,8 @@ import java.io.Serializable;
 /**
  * 这个类是 {@link java.lang.invoke.SerializedLambda} 的镜像类，
  *
- * <p>负责将一个支持序列的 Function 序列化为 SerializedLambda</p>
+ * <p>转换 {@link java.lang.invoke.SerializedLambda} 中的final属性</p>
+ * <p>负责将一个支持序列的 Function Lambda表达式 序列化为 SerializedLambda</p>
  *
  */
 @SuppressWarnings("unused")

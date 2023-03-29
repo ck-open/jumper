@@ -1,7 +1,7 @@
 package com.ck.http_client;
 
 
-import com.ck.function.FunctionUtils;
+import com.ck.function.LambdaUtils;
 import com.ck.function.serializable.BaseFunction;
 
 import java.util.Map;
@@ -66,7 +66,7 @@ public class NetClientFun {
      * @return
      */
     public <T, S> String getHeaderValue(BaseFunction<? super T, ? extends S> func) {
-        return this.client.getHeaderValue(FunctionUtils.fieldName(func));
+        return this.client.getHeaderValue(LambdaUtils.fieldName(func));
     }
 
     /**
@@ -77,7 +77,7 @@ public class NetClientFun {
      * @return
      */
     public <T, S> NetClientFun setHeaders(BaseFunction<? super T, ? extends S> func, T val) {
-        this.client.setHeaders(FunctionUtils.fieldName(func), func.apply(val).toString());
+        this.client.setHeaders(LambdaUtils.fieldName(func), func.apply(val).toString());
         return this;
     }
 
@@ -89,7 +89,7 @@ public class NetClientFun {
      * @return
      */
     public <T, S> NetClientFun getParameter(BaseFunction<? super T, ? extends S> func, T val) {
-        this.client.setParameter(FunctionUtils.fieldName(func), func.apply(val).toString());
+        this.client.setParameter(LambdaUtils.fieldName(func), func.apply(val).toString());
         return this;
     }
 

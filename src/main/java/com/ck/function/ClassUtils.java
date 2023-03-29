@@ -1,7 +1,5 @@
 package com.ck.function;
 
-import org.apache.poi.ss.formula.functions.T;
-
 import java.io.*;
 import java.lang.invoke.*;
 import java.lang.reflect.*;
@@ -102,12 +100,37 @@ public final class ClassUtils {
      * @param name 类名称
      * @return 返回转换后的 Class
      */
-    public static Class<?> getClass(String name) {
+    public static Class<?> getClassForName(String name) {
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {
             throw new IllegalArgumentException("找不到指定的class！请仅在明确确定会有 class 的时候，调用该方法", e);
         }
+    }
+
+    /**
+     * 获取类加载器 ClassLoader
+     * <p> 线程类加载器 -> 当前类加载器 -> 系统类加载器</p>
+     *
+     * @return
+     */
+    public static ClassLoader getClassLoader() {
+        ClassLoader cl = null;
+        try {
+            cl = Thread.currentThread().getContextClassLoader();
+        } catch (Throwable ex) {
+            // 线程类加载器获取失败使用当前类加载器.
+            cl = LambdaUtils.class.getClassLoader();
+            if (cl == null) {
+                // getClassLoader() returning null indicates the bootstrap ClassLoader
+                try {
+                    cl = ClassLoader.getSystemClassLoader();
+                } catch (Throwable e) {
+                    // Cannot access system ClassLoader - oh well, maybe the caller can live with null...
+                }
+            }
+        }
+        return cl;
     }
 
 
@@ -239,46 +262,5 @@ public final class ClassUtils {
             throw new IllegalArgumentException("对象序列化失败: " + object.getClass(), e);
         }
         return byteArrayOutputStream.toByteArray();
-    }
-
-
-    /**
-     * 获取指定字段get方法的 LambdaMetafac 对象
-     *
-     * @param fieldName   字段名称
-     * @param entityClass 字段所属类
-     * @param invokedType 返回值类型
-     * @return
-     * @throws Throwable
-     */
-    public static MethodHandle getFieldMethodHandle(String fieldName, Class<?> entityClass, Class<?> invokedType) {
-        final int FLAG_SERIALIZABLE = 1;
-        final MethodHandles.Lookup lookup = MethodHandles.lookup();
-
-        if (fieldName != null && entityClass != null && invokedType != null) {
-            try {
-                String name = "get" + fieldName.substring(0, 1).toUpperCase();
-                if (fieldName.length() > 1) name += fieldName.substring(1);
-
-                Method method = entityClass.getDeclaredMethod(name);
-                if (method != null) {
-                    MethodType returnMethodType = MethodType.methodType(method.getReturnType(), entityClass);
-
-                    //方法名叫做:getFieldName  转换为 invokedType function interface对象
-                    final CallSite site = LambdaMetafactory.altMetafactory(lookup,
-                            "invoke",
-                            MethodType.methodType(invokedType),
-                            returnMethodType,
-                            lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
-                            returnMethodType, FLAG_SERIALIZABLE);
-
-//            return (SFunction) site.getTarget().invokeExact();
-                    return site.getTarget();
-                }
-            } catch (NoSuchMethodException | IllegalAccessException | LambdaConversionException e) {
-                throw new IllegalArgumentException("获取get" + fieldName + "方法错误", e);
-            }
-        }
-        return null;
     }
 }
