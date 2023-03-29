@@ -1,4 +1,4 @@
-package com.ck.snowflake;
+package com.ck.encrypt;
 
 /**
  * Twitter_Snowflake<br>

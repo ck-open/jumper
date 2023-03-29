@@ -1,4 +1,4 @@
-package com.ck.utils;
+package com.ck.encrypt;
 
 
 import sun.misc.BASE64Decoder;

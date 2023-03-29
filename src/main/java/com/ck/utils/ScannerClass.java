@@ -15,7 +15,7 @@ import java.util.jar.JarFile;
 /**
  * 加载Class类
  */
-public class Scanner {
+public class ScannerClass {
 
     /**
      * 从包package中获取所有的Class

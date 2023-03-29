@@ -1,4 +1,4 @@
-package com.ck.utils;
+package com.ck.id_card;
 
 import java.util.logging.Logger;
 

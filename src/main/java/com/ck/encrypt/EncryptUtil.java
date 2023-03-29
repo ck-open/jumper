@@ -1,4 +1,4 @@
-package com.ck.utils;
+package com.ck.encrypt;
 
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
@@ -9,9 +9,7 @@ import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 加密
@@ -115,6 +113,7 @@ public final class EncryptUtil {
         return md5code;
     }
 
+
     /**
      * 字符串自定义字典乱序加密
      *
@@ -161,7 +160,6 @@ public final class EncryptUtil {
                     stringBuilder.append(chars.get(charsTemp.indexOf(item)));
                 }
             }
-
             str = stringBuilder.toString();
         }
 
