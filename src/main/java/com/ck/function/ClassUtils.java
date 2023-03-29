@@ -5,6 +5,8 @@ import java.lang.invoke.*;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Class 操作工具类
@@ -262,5 +264,44 @@ public final class ClassUtils {
             throw new IllegalArgumentException("对象序列化失败: " + object.getClass(), e);
         }
         return byteArrayOutputStream.toByteArray();
+    }
+
+
+    /**
+     * 设置属性值
+     *
+     * @param name
+     * @param bean
+     * @param val
+     */
+    public static void setValue(String name, Object bean, Object val) {
+        if (bean != null) {
+            try {
+                if (Map.class.isAssignableFrom(bean.getClass())) {
+                    ((Map) bean).put(name, val);
+                } else {
+                    Field field = bean.getClass().getDeclaredField(name);
+                    field.set(bean, val);
+                }
+            } catch (NoSuchFieldException | IllegalAccessException ignored) {
+                throw new IllegalArgumentException(String.format("对象参数设置失败， name:%s  value:%s  Class:%s ", name, val, bean.getClass().getName()));
+            }
+        }
+    }
+
+    /**
+     * 获取数据实例对象所有字段
+     *
+     * @param entityClass
+     * @return
+     */
+    public static Set<String> getFieldNames(Class<?> entityClass) {
+        if (entityClass == null) return new HashSet<>();
+        String serialVersionUID = "serialVersionUID";
+        Set<String> result = Stream.of(entityClass.getDeclaredFields()).filter(i -> !serialVersionUID.equals(i.getName())).map(Field::getName).collect(Collectors.toSet());
+        if (!entityClass.getSuperclass().isAssignableFrom(Object.class)) {
+            result.addAll(Stream.of(entityClass.getSuperclass().getDeclaredFields()).filter(i -> !serialVersionUID.equals(i.getName())).map(Field::getName).collect(Collectors.toSet()));
+        }
+        return result;
     }
 }
