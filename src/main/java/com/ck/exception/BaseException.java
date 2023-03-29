@@ -1,7 +1,7 @@
 package com.ck.exception;
 
 /**
- * 业务异常类
+ * 基础异常类
  */
 public class BaseException extends RuntimeException {
     /**
@@ -11,25 +11,6 @@ public class BaseException extends RuntimeException {
      */
     public BaseException() {
         super();
-    }
-
-    public static void main(String[] args) {
-       throw  new BaseException("才能回家而无法{},{}","");
-    }
-
-    /**
-     * Constructs a new runtime exception with the specified detail message.
-     * The cause is not initialized, and may subsequently be initialized by a
-     * call to {@link #initCause}.
-     *
-     * @param message the detail message. The detail message is saved for
-     *                later retrieval by the {@link #getMessage()} method.
-     */
-    public BaseException(String message,Object... argArray) {
-//        if (argArray!=null && argArray.length>0){
-//            message = String.format(message.replaceAll("\\{}","%S"), argArray);
-//        }
-//        super(message);
     }
 
     /**

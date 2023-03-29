@@ -3,7 +3,7 @@ package com.ck.exception;
 /**
  * 业务异常类
  */
-public class BizException extends RuntimeException {
+public class BizException extends BaseException {
     /**
      * Constructs a new runtime exception with {@code null} as its
      * detail message.  The cause is not initialized, and may subsequently be

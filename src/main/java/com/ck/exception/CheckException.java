@@ -3,7 +3,7 @@ package com.ck.exception;
 /**
  * 数据检查异常类
  */
-public class CheckException extends RuntimeException {
+public class CheckException extends BaseException {
     /**
      * Constructs a new runtime exception with {@code null} as its
      * detail message.  The cause is not initialized, and may subsequently be
