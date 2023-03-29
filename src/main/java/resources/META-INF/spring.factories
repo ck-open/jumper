@@ -1,1 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.ck.core.configuration.JumperAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.ck.core.configuration.JumperAutoConfiguration,\
+  com.ck.core.configuration.SwaggerAutoConfiguration
