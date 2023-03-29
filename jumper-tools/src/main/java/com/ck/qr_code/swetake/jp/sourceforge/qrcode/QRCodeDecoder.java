@@ -44,7 +44,7 @@ public class QRCodeDecoder {
 
         while(this.numTryDecode < adjusts.length) {
             try {
-                QRCodeDecoder.DecodeResult result = this.decode(qrCodeImage, adjusts[this.numTryDecode]);
+                DecodeResult result = this.decode(qrCodeImage, adjusts[this.numTryDecode]);
                 if (result.isCorrectionSucceeded()) {
                     byte[] var6 = result.getDecodedBytes();
                     return var6;
@@ -69,7 +69,7 @@ public class QRCodeDecoder {
             int minError = 2147483647;
 
             for(int i = 0; i < results.size(); ++i) {
-                QRCodeDecoder.DecodeResult result = (QRCodeDecoder.DecodeResult)results.elementAt(i);
+                DecodeResult result = (DecodeResult)results.elementAt(i);
                 if (result.getNumCorrectuionFailures() < minError) {
                     minError = result.getNumCorrectuionFailures();
                     minErrorIndex = i;
@@ -80,7 +80,7 @@ public class QRCodeDecoder {
             canvas.println("Reporting #" + minErrorIndex + " that,");
             canvas.println("corrected minimum errors (" + minError + ")");
             canvas.println("Decoding finished.");
-            return ((QRCodeDecoder.DecodeResult)results.elementAt(minErrorIndex)).getDecodedBytes();
+            return ((DecodeResult)results.elementAt(minErrorIndex)).getDecodedBytes();
         }
     }
 
@@ -115,7 +115,7 @@ public class QRCodeDecoder {
         return adjusts;
     }
 
-    QRCodeDecoder.DecodeResult decode(QRCodeImage qrCodeImage, Point adjust) throws DecodingFailedException {
+    DecodeResult decode(QRCodeImage qrCodeImage, Point adjust) throws DecodingFailedException {
         try {
             if (this.numTryDecode == 0) {
                 canvas.println("Decoding started");
@@ -141,7 +141,7 @@ public class QRCodeDecoder {
 
         try {
             byte[] decodedByteArray = this.getDecodedByteArray(blocks, this.qrCodeSymbol.getVersion(), this.qrCodeSymbol.getNumErrorCollectionCode());
-            return new QRCodeDecoder.DecodeResult(decodedByteArray, this.numLastCorrectionFailures);
+            return new DecodeResult(decodedByteArray, this.numLastCorrectionFailures);
         } catch (InvalidDataBlockException var5) {
             canvas.println(var5.getMessage());
             throw new DecodingFailedException(var5.getMessage());

@@ -1,9 +1,9 @@
-//package com.ck.core.interceptor;
+package com.ck.core.interceptor;//package com.com.ck.core.interceptor;
 //
-//import com.ck.check_bean.CheckResult;
-//import com.ck.check_bean.CheckValueUtil;
-//import com.ck.check_bean.annotation.CheckFlag;
-//import com.ck.exception.CheckException;
+//import com.com.ck.check_bean.CheckResult;
+//import com.com.ck.check_bean.CheckValueUtil;
+//import com.com.ck.check_bean.annotation.CheckFlag;
+//import com.com.ck.exception.CheckException;
 //import lombok.extern.slf4j.Slf4j;
 //import org.springframework.core.MethodParameter;
 //import org.springframework.core.Ordered;

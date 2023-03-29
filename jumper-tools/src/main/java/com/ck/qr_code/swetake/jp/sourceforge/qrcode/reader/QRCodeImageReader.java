@@ -244,7 +244,7 @@ public class QRCodeImageReader {
 
         for(int ay = 0; ay < sqrtNumArea; ++ay) {
             for(int ax = 0; ax < sqrtNumArea; ++ax) {
-                QRCodeImageReader.ModulePitch modulePitch = new QRCodeImageReader.ModulePitch();
+                ModulePitch modulePitch = new ModulePitch();
                 Line baseLineX = new Line();
                 Line baseLineY = new Line();
                 axis.setModulePitch(finderPattern.getModuleSize());

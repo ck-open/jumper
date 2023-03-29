@@ -1,14 +1,14 @@
 package com.ck.qr_code.swetake.jp.sourceforge.qrcode.geom;
 
 public class SamplingGrid {
-    private SamplingGrid.AreaGrid[][] grid;
+    private AreaGrid[][] grid;
 
     public SamplingGrid(int sqrtNumArea) {
-        this.grid = new SamplingGrid.AreaGrid[sqrtNumArea][sqrtNumArea];
+        this.grid = new AreaGrid[sqrtNumArea][sqrtNumArea];
     }
 
     public void initGrid(int ax, int ay, int width, int height) {
-        this.grid[ax][ay] = new SamplingGrid.AreaGrid(width, height);
+        this.grid[ax][ay] = new AreaGrid(width, height);
     }
 
     public void setXLine(int ax, int ay, int x, Line line) {

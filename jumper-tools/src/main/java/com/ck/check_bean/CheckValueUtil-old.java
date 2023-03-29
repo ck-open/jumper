@@ -1,4 +1,4 @@
-//package com.ck.check_bean;
+package com.ck.check_bean;//package com.ck.check_bean;
 //
 //import com.ck.check_bean.annotation.CheckValue;
 //
