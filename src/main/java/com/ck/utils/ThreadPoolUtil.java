@@ -30,7 +30,7 @@ public abstract class ThreadPoolUtil {
     /**
      * 线程池
      */
-    private static final ExecutorService threadPool = Executors.newScheduledThreadPool(ThreadPoolSize);
+    private static final ExecutorService threadPool = createThreadPoolExecutor("BatchTask", 4, 8, 1000 * 30, 500, true);
 
     /**
      * 启动线程执行指定方法
