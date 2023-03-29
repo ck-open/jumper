@@ -38,7 +38,9 @@ public final class FunctionUtils implements Serializable {
             if (serializedLambdaThreadLocal.get() == null) {
                 serializedLambdaThreadLocal.set(new HashMap<>());
             }
-            SerializedLambda s = ClassUtils.serializeClass(ClassUtils.serializeByteArray(func), SerializedLambda.class);
+            Map<String,Class<?>> primClasses = new HashMap<String,Class<?>>();
+            primClasses.put("java.lang.invoke.SerializedLambda",SerializedLambda.class);
+            SerializedLambda s = ClassUtils.deserialize(ClassUtils.serialize(func), SerializedLambda.class,primClasses);
             if (s != null) {
                 serializedLambdaThreadLocal.get().put(func.getClass().getName(), s);
             }
@@ -122,7 +124,7 @@ public final class FunctionUtils implements Serializable {
      */
     public static <T extends Function & Serializable> Class instantiatedType(T func) {
         String instantiatedTypeName = replaceSlash(getSerializedLambda(func).getInstantiatedMethodType().substring(2, getSerializedLambda(func).getInstantiatedMethodType().indexOf(';')));
-        return ClassUtils.toClassConfident(instantiatedTypeName);
+        return ClassUtils.getClass(instantiatedTypeName);
     }
 
     /**

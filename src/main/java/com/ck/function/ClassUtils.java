@@ -1,5 +1,7 @@
 package com.ck.function;
 
+import org.apache.poi.ss.formula.functions.T;
+
 import java.io.*;
 import java.lang.invoke.*;
 import java.lang.reflect.*;
@@ -100,7 +102,7 @@ public final class ClassUtils {
      * @param name 类名称
      * @return 返回转换后的 Class
      */
-    public static Class<?> toClassConfident(String name) {
+    public static Class<?> getClass(String name) {
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {
@@ -143,6 +145,8 @@ public final class ClassUtils {
     }
 
     /**
+     * 获取对象实现的接口 的泛型列表
+     *
      * @param o          实现接口的实体对象
      * @param interfaces 指定要获取的接口，不指定则获取实体对象实现的所有接口泛型
      * @return Map<String, Type>  key: 接口className  v:对应接口的泛型列表
@@ -164,34 +168,16 @@ public final class ClassUtils {
 
         Map<String, Type[]> result = new LinkedHashMap<>();
         for (Type t : interfacesTypes) {
-            if (interfacesClassName != null) {
-                String tName = t.getTypeName();
-                if (tName.contains("<")) tName = tName.substring(0, tName.indexOf("<"));
-                if (!interfacesClassName.contains(tName)) {
-                    continue;
-                }
-
-                Type[] genericType = ((ParameterizedType) t).getActualTypeArguments();
-                result.put(tName, genericType);
+            String tName = t.getTypeName();
+            if (tName.contains("<")) tName = tName.substring(0, tName.indexOf("<"));
+            if (interfacesClassName != null && !interfacesClassName.contains(tName)) {
+                continue;
             }
+
+            Type[] genericType = ((ParameterizedType) t).getActualTypeArguments();
+            result.put(tName, genericType);
         }
         return result;
-    }
-
-    /**
-     * <p>
-     * 请仅在确定类存在的情况下调用该方法
-     * </p>
-     *
-     * @param name 类名称
-     * @return 返回转换后的 Class
-     */
-    public static Class<?> getClass(String name) {
-        try {
-            return Class.forName(name);
-        } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("找不到指定的class！请仅在确定会有 class 的时候，调用该方法", e);
-        }
     }
 
 
@@ -201,23 +187,37 @@ public final class ClassUtils {
      * @param object 要序列化的字节数组
      * @return 表示序列化的对象
      */
-    public static <T extends Serializable> T serializeClass(byte[] object, Class<T> cla) {
+    public static <T extends Serializable> T deserialize(byte[] object, Class<T> cla) {
+        return deserialize(object, cla, null);
+    }
+
+    /**
+     * 将给定字节数组序列化为对象。
+     *
+     * @param object      要序列化的字节数组
+     * @param cla         返回值类型
+     * @param primClasses 自定义类型
+     * @return 表示序列化的对象
+     */
+    public static <T extends Serializable> T deserialize(byte[] object, Class<T> cla, Map<String, Class<?>> primClasses) {
         if (object == null) {
             return null;
         }
         try (ObjectInputStream objIn = new ObjectInputStream(new ByteArrayInputStream(object)) {
             @Override
             protected Class<?> resolveClass(ObjectStreamClass objectStreamClass) throws IOException, ClassNotFoundException {
-                Class<?> clazz = super.resolveClass(objectStreamClass);
-                if (clazz == SerializedLambda.class) {
-                    clazz = cla;
+                Class<?> clazz = null;
+                if (primClasses != null && primClasses.containsKey(objectStreamClass.getName())) {
+                    clazz = primClasses.get(objectStreamClass.getName());
+                } else {
+                    clazz = super.resolveClass(objectStreamClass);
                 }
                 return clazz;
             }
         }) {
             return cla.cast(objIn.readObject());
         } catch (ClassNotFoundException | IOException e) {
-            throw new IllegalArgumentException("二进制序列化成对象失败 ", e);
+            throw new IllegalArgumentException("反序列化对象失败 ", e);
         }
     }
 
@@ -227,7 +227,7 @@ public final class ClassUtils {
      * @param object 要序列化的对象
      * @return 表示对象的字节数组
      */
-    public static <T extends Serializable> byte[] serializeByteArray(T object) {
+    public static <T extends Serializable> byte[] serialize(T object) {
         if (object == null) {
             return null;
         }
@@ -236,14 +236,14 @@ public final class ClassUtils {
             objectOutputStream.writeObject(object);
             objectOutputStream.flush();
         } catch (IOException e) {
-            throw new IllegalArgumentException("对象序列化成byte[]失败: " + object.getClass(), e);
+            throw new IllegalArgumentException("对象序列化失败: " + object.getClass(), e);
         }
         return byteArrayOutputStream.toByteArray();
     }
 
 
     /**
-     * 获取指定字段get方法的MethodHandle对象
+     * 获取指定字段get方法的 LambdaMetafac 对象
      *
      * @param fieldName   字段名称
      * @param entityClass 字段所属类
@@ -262,15 +262,15 @@ public final class ClassUtils {
 
                 Method method = entityClass.getDeclaredMethod(name);
                 if (method != null) {
-                    MethodType methodType = MethodType.methodType(method.getReturnType(), entityClass);
+                    MethodType returnMethodType = MethodType.methodType(method.getReturnType(), entityClass);
 
                     //方法名叫做:getFieldName  转换为 invokedType function interface对象
                     final CallSite site = LambdaMetafactory.altMetafactory(lookup,
                             "invoke",
                             MethodType.methodType(invokedType),
-                            methodType,
+                            returnMethodType,
                             lookup.findVirtual(entityClass, name, MethodType.methodType(method.getReturnType())),
-                            methodType, FLAG_SERIALIZABLE);
+                            returnMethodType, FLAG_SERIALIZABLE);
 
 //            return (SFunction) site.getTarget().invokeExact();
                     return site.getTarget();
