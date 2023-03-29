@@ -3,6 +3,8 @@ package com.ck.core.mybatis;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ck.api.TResult;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +21,7 @@ import java.util.function.Function;
  * @Version 1.0
  * @since 2023/3/15 16:53
  **/
+@Api(tags = "公共跨服务查询接口")
 @RequestMapping("/jumper")
 public class JumperQueryController {
 
@@ -32,6 +35,7 @@ public class JumperQueryController {
      * @param <T>
      * @return
      */
+    @ApiOperation(value = "查询分页数据")
     @ResponseBody
     @PostMapping("page/{mapperBeanName}")
     public <T> TResult<IPage<?>> queryPage(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryUtil.QueryDto dto) {
@@ -61,6 +65,7 @@ public class JumperQueryController {
      * @param <T>
      * @return
      */
+    @ApiOperation(value = "查询列表数据")
     @ResponseBody
     @PostMapping("list/{mapperBeanName}")
     public <T> TResult<List<?>> queryList(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryUtil.QueryDto dto) {
