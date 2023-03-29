@@ -2,14 +2,17 @@ package com.ck.core.configuration;
 
 
 import com.ck.core.feign.FeignClientUtils;
+import com.ck.core.interceptor.CheckRequestBodyInterceptor;
 import com.ck.core.mybatis.JumperQueryController;
 import com.ck.core.properties.JumperProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
 
 @Slf4j
@@ -18,19 +21,20 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties({JumperProperties.class})
 public class JumperAutoConfiguration {
 
-//    /**
-//     * 接口Body报文体对象非空规则自动校验
-//     *
-//     * @return
-//     */
-//    @Bean
-//    @ConditionalOnClass(RequestBodyAdviceAdapter.class)
-//    @ConditionalOnMissingBean(CheckRequestBodyInterceptor.class)
-//    public CheckRequestBodyInterceptor requestBodyAdviceAdapter() {
-//        CheckRequestBodyInterceptor requestBodyAdviceAdapter = new CheckRequestBodyInterceptor();
-//        log.info("CheckRequestBodyInterceptor [{}]", requestBodyAdviceAdapter);
-//        return requestBodyAdviceAdapter;
-//    }
+    /**
+     * 接口Body报文体对象非空规则自动校验
+     *
+     * @return
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "jumper", name = "checkBody", havingValue = "true")
+    @ConditionalOnClass(RequestBodyAdviceAdapter.class)
+    @ConditionalOnMissingBean(CheckRequestBodyInterceptor.class)
+    public CheckRequestBodyInterceptor requestBodyAdviceAdapter() {
+        CheckRequestBodyInterceptor requestBodyAdviceAdapter = new CheckRequestBodyInterceptor();
+        log.info("CheckRequestBodyInterceptor [{}]", requestBodyAdviceAdapter);
+        return requestBodyAdviceAdapter;
+    }
 
 
     /**

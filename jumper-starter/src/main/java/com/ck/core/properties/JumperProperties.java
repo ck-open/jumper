@@ -21,4 +21,9 @@ public class JumperProperties {
      */
     private Boolean enabled = false;
 
+    /**
+     * 是否报文规则校验
+     */
+    private Boolean checkBody = false;
+
 }
