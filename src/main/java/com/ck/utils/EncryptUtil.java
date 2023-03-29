@@ -44,6 +44,11 @@ public final class EncryptUtil {
         System.out.println("解密后的字串是：" + DeString);
     }
 
+
+
+
+
+
     // 加密 AES-128-CBC
     public static String encryptAES(String sSrc, String encodingFormat, String sKey, String ivParameter) throws Exception {
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");

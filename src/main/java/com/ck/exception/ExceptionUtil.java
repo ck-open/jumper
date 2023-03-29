@@ -1,4 +1,4 @@
-package com.ck.utils;
+package com.ck.exception;
 
 import java.io.File;
 import java.io.FileWriter;
