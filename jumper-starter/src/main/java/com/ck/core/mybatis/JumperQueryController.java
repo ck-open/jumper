@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+
 /**
  * @ClassName JumperQueryController
  * @Description 依赖与 QueryUtil 工具构建的 公共跨服务查询接口

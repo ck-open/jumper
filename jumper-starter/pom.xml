@@ -17,6 +17,7 @@
             <groupId>com.ck</groupId>
             <artifactId>jumper-tools</artifactId>
             <version>1.0.0</version>
+            <scope>compile</scope>
         </dependency>
 
         <!-- Swagger -->
