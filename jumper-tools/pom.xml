@@ -4,13 +4,63 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jumper</artifactId>
-        <groupId>com.ck</groupId>
+        <groupId>io.github.ck-open</groupId>
         <version>1.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>jumper-tools</artifactId>
+    <name>Jumper java8 Tools</name>
+    <description>基于 Java8 整理的工具集</description>
+    <url>https://github.com/ck-open/jumper</url>
 
+    <!--打包方式-->
+    <packaging>jar</packaging>
+    <!--maven工程配置-->
+    <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <!--许可证信息，开源协议-->
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version2.0</name>
+            <url>http://www.apache.org/licenses/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!--托管仓库信息-->
+    <scm>
+        <url>https://github.com/ck-open/jumper.git</url>
+        <connection>https://github.com/ck-open/jumper</connection>
+    </scm>
+
+    <!--开发者信息-->
+    <developers>
+        <developer>
+            <name>Chen Yunke</name>
+            <email>18141925358@163.com</email>
+            <url>https://ck-open.github.io</url>
+        </developer>
+    </developers>
+
+    <!--仓库地址配置信息-->
+    <distributionManagement>
+        <snapshotRepository>
+            <!--id 要与setting.xml server id一致 -->
+            <id>snapshot</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <!--id 要与setting.xml server id一致 -->
+            <id>release</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <!-- 导入lombok工具依赖包 -->

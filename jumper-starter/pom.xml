@@ -4,12 +4,64 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <artifactId>jumper</artifactId>
-        <groupId>com.ck</groupId>
+        <groupId>io.github.ck-open</groupId>
         <version>1.0.0</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
 
+    <!--项目信息-->
+    <modelVersion>4.0.0</modelVersion>
     <artifactId>jumper-starter</artifactId>
+    <name>Jumper MyBatis Plus Enhance</name>
+    <description>基于MyBatis Plus 实现简化微服务之间数据查询的冗余代码</description>
+    <url>https://github.com/ck-open/jumper</url>
+
+    <!--打包方式-->
+    <packaging>jar</packaging>
+    <!--maven工程配置-->
+    <properties>
+        <java.version>1.8</java.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+    </properties>
+
+    <!--许可证信息，开源协议-->
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version2.0</name>
+            <url>http://www.apache.org/licenses/</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <!--托管仓库信息-->
+    <scm>
+        <url>https://github.com/ck-open/jumper.git</url>
+        <connection>https://github.com/ck-open/jumper</connection>
+    </scm>
+
+    <!--开发者信息-->
+    <developers>
+        <developer>
+            <name>Chen Yunke</name>
+            <email>18141925358@163.com</email>
+            <url>https://ck-open.github.io</url>
+        </developer>
+    </developers>
+
+    <!--仓库地址配置信息-->
+    <distributionManagement>
+        <snapshotRepository>
+            <!--id 要与setting.xml server id一致 -->
+            <id>snapshot</id>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <!--id 要与setting.xml server id一致 -->
+            <id>release</id>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
 
     <dependencies>
         <!--引入工具类-->
@@ -85,39 +137,52 @@
 
     </dependencies>
 
+    <!--发布到oss.sonatype.org需要的组件，已经配置好，无需修改-->
     <build>
         <plugins>
+            <!--java source生成插件-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+            <!--java doc生成插件-->
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptorRefs>
-                        <descriptorRef>jar-with-dependencies</descriptorRef>
-                    </descriptorRefs>
-                </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--gpg签名插件-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
-
-        <resources>
-            <resource>
-                <directory>jumper-tools/src/main/java/src/main/java</directory>
-                <includes>
-                    <include>**/qrcode_data/*.dat</include> <!-- 指定编译时 将二维码生成工具的数据文件编译进class目录 -->
-                </includes>
-            </resource>
-            <resource>
-                <directory>jumper-tools/src/main/java/src/main/resources</directory>
-                <includes>
-                    <include>**/*</include>
-                </includes>
-            </resource>
-        </resources>
     </build>
 </project>
