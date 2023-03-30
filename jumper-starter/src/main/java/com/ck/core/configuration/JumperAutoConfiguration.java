@@ -74,9 +74,15 @@ public class JumperAutoConfiguration {
      */
     @ConditionalOnMissingBean(MybatisPlusInterceptor.class)
     @Bean("mybatisPlusInterceptor")
-    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+    public MybatisPlusInterceptor mybatisPlusInterceptor(JumperProperties jumperProperties) {
+        DbType dbType = null;
+        if (jumperProperties != null && jumperProperties.getDbType() != null) {
+            dbType = DbType.getDbType(jumperProperties.getDbType());
+        }
+        if (dbType == null) dbType = DbType.MYSQL;
+
         MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
-        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(dbType));
         log.info("MybatisPlusInterceptor [{}]", interceptor);
         return interceptor;
     }

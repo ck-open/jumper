@@ -25,5 +25,9 @@ public class JumperProperties {
      * 是否报文规则校验
      */
     private Boolean checkBody = false;
+    /**
+     * 使用的数据库类型 参考${com.baomidou.mybatisplus.annotation.DbType}
+     */
+    private String DbType;
 
 }
