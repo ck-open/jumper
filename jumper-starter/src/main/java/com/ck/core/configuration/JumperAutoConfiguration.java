@@ -1,6 +1,9 @@
 package com.ck.core.configuration;
 
 
+import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.ck.core.feign.FeignClientUtils;
 import com.ck.core.interceptor.CheckRequestBodyInterceptor;
 import com.ck.core.mybatis.JumperQueryController;
@@ -62,6 +65,20 @@ public class JumperAutoConfiguration {
         JumperQueryController exceptionHandler = new JumperQueryController();
         log.info("JumperQueryController [{}]", exceptionHandler);
         return exceptionHandler;
+    }
+
+    /**
+     * MyBatisPlus  分页支持
+     *
+     * @return
+     */
+    @ConditionalOnMissingBean(MybatisPlusInterceptor.class)
+    @Bean("mybatisPlusInterceptor")
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        log.info("MybatisPlusInterceptor [{}]", interceptor);
+        return interceptor;
     }
 
 }
