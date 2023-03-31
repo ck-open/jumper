@@ -1,5 +1,7 @@
 package com.ck.function.compiler;
 
+import com.ck.utils.FileUtil;
+
 import javax.tools.*;
 import java.io.*;
 import java.nio.charset.Charset;
@@ -24,7 +26,7 @@ public final class CompilerUtils {
     private CompilerUtils() {
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         StringBuilder sb = new StringBuilder();
         sb.append("package com.even.test;");
         sb.append("import java.util.Map;\nimport java.text.DecimalFormat;\n");
@@ -35,7 +37,11 @@ public final class CompilerUtils {
         sb.append("return Double.valueOf(df.format(d));}}");
 
 
+        String path = "E:\\";
 
+        FileUtil.writerTextFile(path+"Sum.java",sb.toString());
+
+        compiler(path,FileUtil.getFilePath(path+"\\Sum").getPath());
 
     }
 
@@ -87,7 +93,7 @@ public final class CompilerUtils {
 
 
 
-    public static void compiler() throws IOException {
+    public static void compiler(String outPath,String... sources) throws IOException {
         //1.获得系统编译器
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
@@ -97,10 +103,10 @@ public final class CompilerUtils {
 
         //3. 建立源文件对象，每一个文件都被保存在一个JavaFileObject继承的类中
         Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromStrings(
-                Arrays.asList("G:\\TestCompiler.java"));
+                Arrays.asList(sources));
 
         //4. 确定options命令行选项
-        List<String> options = Arrays.asList("-d", "G:\\");
+        List<String> options = Arrays.asList("-d", outPath);
 
         //5. 获取编译任务
         JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnosticCollector, options, null, compilationUnits);
