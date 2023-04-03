@@ -4,12 +4,12 @@ import com.ck.utils.FileUtil;
 
 import javax.tools.*;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.SecureClassLoader;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -28,118 +28,182 @@ public final class CompilerUtils {
     private CompilerUtils() {
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
-        sb.append("package com.even.test;");
-        sb.append("import java.util.Map;\nimport java.text.DecimalFormat;\n");
-        sb.append("public class Sum{\n");
-        sb.append("private final DecimalFormat df = new DecimalFormat(\"#.#####\");\n");
-        sb.append("public Double calculate(Map data){\n");
-        sb.append("double d = (30*data.get(\"f1\") + 20*data.get(\"f2\") + 50*data.get(\"f3\"))/100;\n");
-        sb.append("return Double.valueOf(df.format(d));}}");
+        sb.append("package com.ck.function.compiler;");
+        sb.append("public class TestCompiler {");
+        sb.append("private String name;");
+        sb.append("private String address;");
+        sb.append("public String getName() { return name; }");
+        sb.append("public void setName(String name) {this.name = name;}");
+        sb.append("public String getAddress() {return address;}");
+        sb.append("public void setAddress(String address) {this.address = address;}");
+        sb.append("}");
 
 
-        String path = "E:\\";
+        String fullName = "com.ck.function.compiler.TestCompiler.java";
+        String sourceCode = sb.toString();
 
-        FileUtil.writerTextFile(path+"Sum.java",sb.toString());
+        // 获取编译器
+        JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
 
-//        compiler(path,FileUtil.getFilePath(path+"\\Sum").getPath());
+        // 通过DiagnosticListener得到诊断信息，而DiagnosticCollector类就是listener的实现。
+        DiagnosticCollector diagnosticCollector = new DiagnosticCollector();
+
+        // 构建文件管理器  StandardJavaFileManager实例
+        JavaFileManager fileManager = new MemoryJavaFileManager(javaCompiler.getStandardFileManager(diagnosticCollector, null, null));
+
+        List<JavaFileObject> javaFileObjectList = new ArrayList<>();
+        javaFileObjectList.add(new CharJavaFileObject(fullName, sourceCode));
+
+        // 编译源码
+        boolean result = javaCompiler.getTask(null, fileManager, null, null, null, javaFileObjectList).call();
+
+        // 加载类
+        if (result) {
+            fileManager.getClassLoader(null).loadClass(fullName);
+        } else {
+            Class.forName(fullName);
+        }
 
     }
 
 
-//    public static void testInvoke(String className, String source)
-//            throws ClassNotFoundException, IllegalAccessException,
-//            InstantiationException, NoSuchMethodException,
-//            InvocationTargetException {
-//
-//        final String SUFFIX = ".java";// 类名后面要跟的后缀
-//
-//        // 对source进行编译生成class文件存放在Map中，这里用bytecode接收
-//        Map<String, byte[]> bytecode = DynamicLoader.compile(className + SUFFIX,
-//                source);
-//
-//        // 加载class文件到虚拟机中，然后通过反射执行
-//        @SuppressWarnings("resource")
-//        DynamicLoader.MemoryClassLoader classLoader = new DynamicLoader.MemoryClassLoader(
-//                bytecode);
-//        Class<?> clazz = classLoader.loadClass("TestClass");
-//        Object object = clazz.newInstance();
-//
-//        // 得到sayHello方法
-//        Method sayHelloMethod = clazz.getMethod("sayHello", String.class);
-//        sayHelloMethod.invoke(object, "This is the method called by reflect");
-//
-//        // 得到add方法
-//        Method addMethod = clazz.getMethod("add", int.class, int.class);
-//        Object returnValue = addMethod.invoke(object, 1024, 1024);
-//        System.out.println(Thread.currentThread().getName() + ": "
-//                + "1024 + 1024 = " + returnValue);
-//
-//        // 因为在main方法中，调用了add和sayHello方法，所以直接调用main方法就可以执行两个方法
-//        Method mainMethod = clazz.getDeclaredMethod("main", String[].class);
-//        mainMethod.invoke(null, (Object) new String[] {});
-//    }
-
-
     /**
-     * 通过类名和其代码（Java代码字符串），编译得到字节码，返回类名及其对应类的字节码，封装于Map中，值得注意的是，
-     * 平常类中就编译出来的字节码只有一个类，但是考虑到内部类的情况， 会出现很多个类名及其字节码，所以用Map封装方便。
+     * 将包路径转换为文件路径
      *
-     * @param javaName 类名
-     * @param javaSrc  Java源码
-     * @return map
+     * @param name
+     * @return
      */
-    public static Map<String, byte[]> compile(String javaName, String javaSrc) {
-        // 调用java编译器接口
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        StandardJavaFileManager stdManager = compiler
-                .getStandardFileManager(null, null, null);
+    public static URI toFileURI(String name) {
+        File file = new File(name);
+        if (file.exists()) {// 如果文件存在，返回他的URI
+            return file.toURI();
+        } else {
 
-        try (MemoryJavaFileManager manager = new MemoryJavaFileManager(
-                stdManager)) {
-
-            @SuppressWarnings("static-access")
-            JavaFileObject javaFileObject = manager.makeStringSource(javaName,
-                    javaSrc);
-            JavaCompiler.CompilationTask task = compiler.getTask(null, manager,
-                    null, null, null, Arrays.asList(javaFileObject));
-            if (task.call()) {
-                return manager.getClassBytes();
+            try {
+                final StringBuilder newUri = new StringBuilder();
+                newUri.append("mfm:///");
+                newUri.append(name.replace('.', '/'));
+                if (name.endsWith(JavaFileObject.Kind.SOURCE.extension)) {
+                    newUri.replace(newUri.length() - JavaFileObject.Kind.SOURCE.extension.length(), newUri.length(), JavaFileObject.Kind.SOURCE.extension);
+                }
+                return URI.create(newUri.toString());
+            } catch (Exception exp) {
+                return URI.create("mfm:///com/sun/script/java/java_source");
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return null;
     }
 
-    /**
-     * 先根据类名在内存中查找是否已存在该类，若不存在则调用 URLClassLoader的 defineClass方法加载该类
-     * URLClassLoader的具体作用就是将class文件加载到jvm虚拟机中去
-     *
-     * @author Administrator
-     *
-     */
-    public static class MemoryClassLoader extends URLClassLoader {
-        Map<String, byte[]> classBytes = new HashMap<String, byte[]>();
 
-        public MemoryClassLoader(Map<String, byte[]> classBytes) {
-            super(new URL[0], MemoryClassLoader.class.getClassLoader());
-            this.classBytes.putAll(classBytes);
+    /**
+     * 基于内存的JavaFile管理器
+     */
+    public static class MemoryJavaFileManager extends ForwardingJavaFileManager {
+        /**
+         * 存储编译后的代码数据
+         * key:className
+         */
+        private Map<String, JavaClassObject> classJavaFileObject = new LinkedHashMap<>();
+
+        public MemoryJavaFileManager(JavaFileManager fileManager) {
+            super(fileManager);
         }
 
+        /**
+         * 编译后加载类
+         * <p>
+         * 返回一个匿名的SecureClassLoader:
+         * 加载由JavaCompiler编译后，保存在ClassJavaFileObject中的byte数组。
+         */
         @Override
-        protected Class<?> findClass(String name)
-                throws ClassNotFoundException {
-            byte[] buf = classBytes.get(name);
-            if (buf == null) {
-                return super.findClass(name);
-            }
-            classBytes.remove(name);
-            return defineClass(name, buf, 0, buf.length);
+        public ClassLoader getClassLoader(Location location) {
+            return new SecureClassLoader() {
+                @Override
+                protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    byte[] bytes = classJavaFileObject.get(name).getBytes();
+                    return super.defineClass(name, bytes, 0, bytes.length);
+                }
+            };
+        }
+
+        /**
+         * 给编译器提供JavaClassObject，编译器会将编译结果写进去
+         */
+        @Override
+        public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+            JavaClassObject classObject = new JavaClassObject(className, kind);
+            this.classJavaFileObject.put(className, classObject);
+            return classObject;
         }
     }
 
+
+    /**
+     * 存储源代码
+     * 字符串java源代码。JavaFileObject表示
+     */
+    public static class CharJavaFileObject extends SimpleJavaFileObject {
+
+        //表示java源代码
+        private CharSequence content;
+
+        protected CharJavaFileObject(String className, String content) {
+//            super(URI.create("string:///" + className.replaceAll("\\.", "/") + Kind.SOURCE.extension), Kind.SOURCE);
+            super(toFileURI(className), Kind.SOURCE);
+            this.content = content;
+        }
+
+        /**
+         * 获取需要编译的源代码
+         *
+         * @param ignoreEncodingErrors
+         * @return
+         * @throws IOException
+         */
+        @Override
+        public CharSequence getCharContent(boolean ignoreEncodingErrors) throws IOException {
+            return content;
+        }
+    }
+
+    /**
+     * 存储编译后的字节码
+     */
+    public static class JavaClassObject extends SimpleJavaFileObject {
+
+        /**
+         * Compiler编译后的byte数据会存在这个ByteArrayOutputStream对象中，
+         * 后面可以取出，加载到JVM中。
+         */
+        private ByteArrayOutputStream byteArrayOutputStream;
+
+        public JavaClassObject(String className, Kind kind) {
+//            super(URI.create("string:///" + className.replaceAll("\\.", "/") + kind.extension), kind);
+            super(toFileURI(className), kind);
+            this.byteArrayOutputStream = new ByteArrayOutputStream();
+        }
+
+        /**
+         * 覆盖父类SimpleJavaFileObject的方法。
+         * 该方法提供给编译器结果输出的OutputStream。
+         * <p>
+         * 编译器完成编译后，会将编译结果输出到该 OutputStream 中，我们随后需要使用它获取编译结果
+         *
+         * @return
+         * @throws IOException
+         */
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            return this.byteArrayOutputStream;
+        }
+
+        /**
+         * FileManager会使用该方法获取编译后的byte，然后将类加载到JVM
+         */
+        public byte[] getBytes() {
+            return this.byteArrayOutputStream.toByteArray();
+        }
+    }
 
 }
