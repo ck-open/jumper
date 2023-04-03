@@ -59,15 +59,17 @@ public final class CompilerUtils {
         // 编译源码
         boolean result = javaCompiler.getTask(null, fileManager, null, null, null, javaFileObjectList).call();
 
+        Class<?> cla = null;
         // 加载类
         if (result) {
-            fileManager.getClassLoader(null).loadClass(fullName);
+            cla = fileManager.getClassLoader(null).loadClass(fullName);
         } else {
-            Class.forName(fullName);
+            cla = Class.forName(fullName);
         }
 
     }
 
+    private static String URI_f="";
 
     /**
      * 将包路径转换为文件路径
@@ -75,7 +77,7 @@ public final class CompilerUtils {
      * @param name
      * @return
      */
-    public static URI toFileURI(String name) {
+    public static URI toFileURI(String name,JavaFileObject.Kind kind) {
         File file = new File(name);
         if (file.exists()) {// 如果文件存在，返回他的URI
             return file.toURI();
@@ -83,10 +85,10 @@ public final class CompilerUtils {
 
             try {
                 final StringBuilder newUri = new StringBuilder();
-                newUri.append("mfm:///");
+                newUri.append("memo:///");
                 newUri.append(name.replace('.', '/'));
-                if (name.endsWith(JavaFileObject.Kind.SOURCE.extension)) {
-                    newUri.replace(newUri.length() - JavaFileObject.Kind.SOURCE.extension.length(), newUri.length(), JavaFileObject.Kind.SOURCE.extension);
+                if (name.endsWith(kind.extension)) {
+                    newUri.replace(newUri.length() - kind.extension.length(), newUri.length(), kind.extension);
                 }
                 return URI.create(newUri.toString());
             } catch (Exception exp) {
@@ -94,6 +96,7 @@ public final class CompilerUtils {
             }
         }
     }
+
 
 
     /**
@@ -121,6 +124,13 @@ public final class CompilerUtils {
             return new SecureClassLoader() {
                 @Override
                 protected Class<?> findClass(String name) throws ClassNotFoundException {
+                    if (name != null && !name.endsWith(JavaFileObject.Kind.CLASS.extension)) {
+                        if (name.endsWith(JavaFileObject.Kind.SOURCE.extension)) {
+                            name = name.replace(JavaFileObject.Kind.SOURCE.extension, JavaFileObject.Kind.CLASS.extension);
+                        } else {
+                            name += JavaFileObject.Kind.CLASS.extension;
+                        }
+                    }
                     byte[] bytes = classJavaFileObject.get(name).getBytes();
                     return super.defineClass(name, bytes, 0, bytes.length);
                 }
@@ -132,6 +142,7 @@ public final class CompilerUtils {
          */
         @Override
         public JavaFileObject getJavaFileForOutput(Location location, String className, JavaFileObject.Kind kind, FileObject sibling) throws IOException {
+            className += kind.extension;
             JavaClassObject classObject = new JavaClassObject(className, kind);
             this.classJavaFileObject.put(className, classObject);
             return classObject;
@@ -149,8 +160,8 @@ public final class CompilerUtils {
         private CharSequence content;
 
         protected CharJavaFileObject(String className, String content) {
-//            super(URI.create("string:///" + className.replaceAll("\\.", "/") + Kind.SOURCE.extension), Kind.SOURCE);
-            super(toFileURI(className), Kind.SOURCE);
+//            super(URI.create(URI_f + className.replaceAll("\\.", "/") + Kind.SOURCE.extension), Kind.SOURCE);
+            super(toFileURI(className,Kind.SOURCE), Kind.SOURCE);
             this.content = content;
         }
 
@@ -179,8 +190,7 @@ public final class CompilerUtils {
         private ByteArrayOutputStream byteArrayOutputStream;
 
         public JavaClassObject(String className, Kind kind) {
-//            super(URI.create("string:///" + className.replaceAll("\\.", "/") + kind.extension), kind);
-            super(toFileURI(className), kind);
+            super(toFileURI(className,kind), kind);
             this.byteArrayOutputStream = new ByteArrayOutputStream();
         }
 
