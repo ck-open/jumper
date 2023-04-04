@@ -90,7 +90,7 @@ public final class JavaCompilerUtils {
      * @param javaFileObjects
      * @return
      */
-    public static Map<String, Class<?>> compiler(JavaFileManager javaFileManager, List<? extends JavaFileObject> javaFileObjects) {
+    public static Map<String, Class<?>> compiler(JavaFileManager javaFileManager, List<? extends JavaFileObject> javaFileObjects, String... option) {
         // 获取编译器
         JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
 
@@ -99,7 +99,13 @@ public final class JavaCompilerUtils {
             javaFileManager = javaCompiler.getStandardFileManager(null, null, null);
         }
 
-        boolean result = javaCompiler.getTask(null, javaFileManager, null, null, null, javaFileObjects).call();
+        // 编译器选项
+        List<String> options = null;
+        if (option != null) {
+            options = Arrays.asList(option);
+        }
+
+        boolean result = javaCompiler.getTask(null, javaFileManager, null, options, null, javaFileObjects).call();
 
         log.info("java source compilation " + (result ? "succeed" : "failed"));
         try {
@@ -113,7 +119,6 @@ public final class JavaCompilerUtils {
         JavaFileManager finalJavaFileManager = javaFileManager;
         javaFileObjects.forEach(javaFileObject -> {
             String className = removeSuffixes(javaFileObject.getName()).replaceAll("/", ".");
-            ;
             try {
                 if (result) {
                     classMap.put(className, finalJavaFileManager.getClassLoader(StandardLocation.CLASS_PATH).loadClass(javaFileObject.getName()));
@@ -262,35 +267,57 @@ public final class JavaCompilerUtils {
             return new SecureClassLoader() {
                 @Override
                 protected Class<?> findClass(String name) throws ClassNotFoundException {
-                    String classFileName = JavaCompilerUtils.class.getResource("/").getPath()
-                            + removeSuffixes(name) + JavaFileObject.Kind.CLASS.extension;
-
+                    String classFileName = name;
                     name = removeSuffixes(name).replaceAll("/", ".");
                     if (!classJavaFileObject.containsKey(name)) {
                         throw new NullPointerException("MemoryJavaFileManager JavaClassObject nonentity ClassName: " + name);
                     }
 
-                    // 检查包路径 不存在则创建
-                    String path = classFileName.substring(0, classFileName.lastIndexOf("/"));
-                    File classPathFile = new File(path);
-                    if (!classPathFile.exists()) {
-                        classPathFile.mkdirs();
-                    }
+                    // 将 二进制 class 写出到class文件
+                    writerClassFile(classFileName, classJavaFileObject.get(name).getBytes());
 
-                    // 写出 .class 文件
-                    File classFile = new File(classFileName);
-                    if (!classFile.exists()) {
-                        try (FileOutputStream writer = new FileOutputStream(classFile)) {
-                            writer.write(classJavaFileObject.get(name).getBytes());
-                        } catch (IOException e) {
-                            log.warning("class file write failed className: " + name);
+                    // 处理内部类
+                    String finalName = name;
+                    classJavaFileObject.forEach((k, v) -> {
+                        if (k.startsWith(finalName + "$")) {
+                            writerClassFile(k, v.getBytes());
                         }
-                    }
+                    });
 
                     byte[] bytes = classJavaFileObject.get(name).getBytes();
                     return super.defineClass(name, bytes, 0, bytes.length);
                 }
             };
+        }
+
+        /**
+         * 将 二进制 class 写出到class文件
+         *
+         * @param className
+         * @param bytes
+         */
+        private static void writerClassFile(String className, byte[] bytes) {
+            String classFileName = JavaCompilerUtils.class.getResource("/").getPath()
+                    + removeSuffixes(className).replaceAll("\\.", "/") + JavaFileObject.Kind.CLASS.extension;
+            // 检查包路径 不存在则创建
+            String path = classFileName.substring(0, classFileName.lastIndexOf("/"));
+            File classPathFile = new File(path);
+            if (!classPathFile.exists()) {
+                classPathFile.mkdirs();
+            }
+
+            // 写出 .class 文件
+            File classFile = new File(classFileName);
+            if (classFile.exists()) {
+                log.info("class file Overwrite the source file at write out time className: " + removeSuffixes(className).replace("/", ".") + JavaFileObject.Kind.CLASS.extension);
+            } else {
+                log.info("class file write out succeed className: " + removeSuffixes(className).replace("/", ".") + JavaFileObject.Kind.CLASS.extension);
+            }
+            try (FileOutputStream writer = new FileOutputStream(classFile)) {
+                writer.write(bytes);
+            } catch (IOException e) {
+                log.warning("class file write failed className: " + removeSuffixes(className).replace("/", ".") + JavaFileObject.Kind.CLASS.extension);
+            }
         }
 
         /**
