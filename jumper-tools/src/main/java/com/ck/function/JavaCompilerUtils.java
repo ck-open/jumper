@@ -154,7 +154,7 @@ public final class JavaCompilerUtils {
             // 源码不是以 package 开头
             throw new UnknownFormatFlagsException("source code not package Starts With");
         }
-        if (!sourceCode.contains("class")) {
+        if (!sourceCode.contains("class") && !sourceCode.contains("interface")) {
             // 源码不包含class关键字
             throw new UnknownFormatFlagsException("source code not contains class flag");
         }
@@ -165,7 +165,14 @@ public final class JavaCompilerUtils {
 
         String fullName = sourceCode.substring(0, sourceCode.indexOf(";")).replace("package", "").trim();
 
-        String className = sourceCode.substring(sourceCode.indexOf("class"), sourceCode.indexOf("{")).replace("class", "");
+        String className = sourceCode.substring(sourceCode.indexOf("public"), sourceCode.indexOf("{") + 1);
+        if (className.contains("interface")) {
+            className = className.substring(className.indexOf("interface"), className.indexOf("{")).replace("interface", "");
+        } else {
+            className = className.substring(className.indexOf("class"), className.indexOf("{")).replace("class", "");
+        }
+
+
         StringBuilder s = new StringBuilder();
         for (int i = 0; i < className.length(); i++) {
             char c = className.charAt(i);
