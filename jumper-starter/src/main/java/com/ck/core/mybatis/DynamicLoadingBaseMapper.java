@@ -4,6 +4,7 @@ import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -15,14 +16,11 @@ import java.util.stream.Stream;
  **/
 @Slf4j
 public class DynamicLoadingBaseMapper {
-
-
-    private static final String packagePath = "com.ck.db.mapper";
     private static final StringBuilder sourceCodeFormat = new StringBuilder();
 
     static {
         sourceCodeFormat
-                .append("package ").append(packagePath).append(";").append("\n")
+                .append("package PackagePath;").append("\n")
                 .append("import com.baomidou.mybatisplus.annotation.TableField;").append("\n")
                 .append("import com.baomidou.mybatisplus.annotation.TableName;").append("\n")
                 .append("import org.apache.ibatis.annotations.Mapper;").append("\n")
@@ -41,13 +39,18 @@ public class DynamicLoadingBaseMapper {
     /**
      * 根据自定义 Sql 生成 MyBatis Plus BaseMapper<PO> 接口源码
      *
-     * @param poClassName
+     * @param className
      * @param sql
      * @return
      */
-    public static Map<String, Class<?>> getBaseMapperJavaSource(String poClassName, String sql) {
+    public static Map<String, Class<?>> getBaseMapperJavaSource(String packagePath, String className, String sql) {
+        Objects.requireNonNull(packagePath, "未指定动态 BaseMapper package 地址");
+        Objects.requireNonNull(className, "未指定动态 BaseMapper ClassName 名称");
+        Objects.requireNonNull(sql, "未指定动态 BaseMapper Sql 语句");
+
         String javaSource = sourceCodeFormat.toString();
-        javaSource = javaSource.replaceAll("PoClassName", poClassName);
+        javaSource = javaSource.replaceAll("PackagePath", packagePath);
+        javaSource = javaSource.replaceAll("PoClassName", className);
 
         sql = sql.replaceAll("\\r", " ").replaceAll("\\n", " ");
         javaSource = javaSource.replaceAll("SQLTableName", getSqlTableName(sql));
@@ -63,7 +66,7 @@ public class DynamicLoadingBaseMapper {
      * @param sql
      * @return
      */
-    public static String getSqlTableName(String sql) {
+    private static String getSqlTableName(String sql) {
         StringBuilder sqlTableName = new StringBuilder();
 
         if (sql.contains("FROM")) {
@@ -89,7 +92,7 @@ public class DynamicLoadingBaseMapper {
      * @param sql
      * @return
      */
-    public static String getSqlPoFields(String sql) {
+    private static String getSqlPoFields(String sql) {
         StringBuilder sqlFields = new StringBuilder();
 
         String fieldsSql = sql.substring(0, sql.indexOf(" from")).replace("select ", "");
