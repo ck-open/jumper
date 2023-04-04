@@ -29,6 +29,42 @@ public final class JavaCompilerUtils {
     private JavaCompilerUtils() {
     }
 
+    public static void main(String[] args) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("package com.ck.function.compiler;");
+        sb.append("public class TestCompiler {");
+        sb.append("private String name;");
+        sb.append("private String address;");
+        sb.append("public String getName() { return name; }");
+        sb.append("public void setName(String name) {this.name = name;}");
+        sb.append("public String getAddress() {return address;}");
+        sb.append("public void setAddress(String address) {this.address = address;}");
+        sb.append("}");
+
+
+        Map<String, Class<?>> classMap = compiler(sb.toString());
+        System.out.println(classMap);
+    }
+
+    /**
+     * 编译java源码
+     *
+     * @param javaFileObjects
+     * @return
+     */
+    public static boolean compiler(JavaFileManager javaFileManager, List<JavaFileObject> javaFileObjects) {
+        // 获取编译器
+        JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
+
+        // 构建默认文件管理器  StandardJavaFileManager实例
+        if (javaFileManager==null){
+            javaFileManager = javaCompiler.getStandardFileManager(null, null, null);
+        }
+
+        boolean result = javaCompiler.getTask(null, javaFileManager, null, null, null, javaFileObjects).call();
+
+        return result;
+    }
 
     /**
      * 编译java源码并加载Class
@@ -50,7 +86,6 @@ public final class JavaCompilerUtils {
         // 编译源码
         List<CharJavaFileObject> javaFileObjects = buildJavaFileObject(sourceCode);
         boolean result = javaCompiler.getTask(null, fileManager, null, null, null, javaFileObjects).call();
-
         // 加载类
         Map<String, Class<?>> classMap = new LinkedHashMap<>();
         javaFileObjects.forEach(charJavaFileObject -> {
@@ -64,6 +99,12 @@ public final class JavaCompilerUtils {
                 log.warning("java source compilation failed  message: " + e.getMessage());
             }
         });
+
+        try {
+            fileManager.close();
+        } catch (IOException e) {
+            log.warning("JavaFileManager close failed  message: " + e.getMessage());
+        }
 
 
         // 采集编译器的诊断信息
@@ -132,17 +173,6 @@ public final class JavaCompilerUtils {
         return fullName;
     }
 
-    /**
-     * 字符串源码构建JavaFileObject
-     *
-     * @param sourceCode
-     * @return
-     */
-    public static Set<String> getSourceCodeImport(String sourceCode) {
-        Set<String> result = new LinkedHashSet<>();
-
-        return result;
-    }
 
     /**
      * 将包路径转换为文件路径
