@@ -41,30 +41,14 @@ public final class JavaCompilerUtils {
         sb.append("public void setAddress(String address) {this.address = address;}");
         sb.append("}");
 
+        compiler(null, buildJavaFileObject(sb.toString()));
+
+//        Class<?> c = ClassUtils.getClassForName("com.ck.function.compiler.TestCompiler");
 
         Map<String, Class<?>> classMap = compiler(sb.toString());
         System.out.println(classMap);
     }
 
-    /**
-     * 编译java源码
-     *
-     * @param javaFileObjects
-     * @return
-     */
-    public static boolean compiler(JavaFileManager javaFileManager, List<JavaFileObject> javaFileObjects) {
-        // 获取编译器
-        JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
-
-        // 构建默认文件管理器  StandardJavaFileManager实例
-        if (javaFileManager==null){
-            javaFileManager = javaCompiler.getStandardFileManager(null, null, null);
-        }
-
-        boolean result = javaCompiler.getTask(null, javaFileManager, null, null, null, javaFileObjects).call();
-
-        return result;
-    }
 
     /**
      * 编译java源码并加载Class
@@ -74,18 +58,16 @@ public final class JavaCompilerUtils {
      */
     public static Map<String, Class<?>> compiler(String... sourceCode) {
 
-        // 获取编译器
-        JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
-
         // 通过DiagnosticListener得到诊断信息，而DiagnosticCollector类就是listener的实现。
         DiagnosticCollector diagnosticCollector = new DiagnosticCollector();
 
         // 构建文件管理器  StandardJavaFileManager实例
-        JavaFileManager fileManager = new MemoryJavaFileManager(javaCompiler.getStandardFileManager(diagnosticCollector, null, null));
+        JavaFileManager fileManager = new MemoryJavaFileManager(ToolProvider.getSystemJavaCompiler().getStandardFileManager(diagnosticCollector, null, null));
 
         // 编译源码
         List<CharJavaFileObject> javaFileObjects = buildJavaFileObject(sourceCode);
-        boolean result = javaCompiler.getTask(null, fileManager, null, null, null, javaFileObjects).call();
+        boolean result = compiler(fileManager, javaFileObjects);
+
         // 加载类
         Map<String, Class<?>> classMap = new LinkedHashMap<>();
         javaFileObjects.forEach(charJavaFileObject -> {
@@ -100,12 +82,6 @@ public final class JavaCompilerUtils {
             }
         });
 
-        try {
-            fileManager.close();
-        } catch (IOException e) {
-            log.warning("JavaFileManager close failed  message: " + e.getMessage());
-        }
-
 
         // 采集编译器的诊断信息
         List<Diagnostic<CharJavaFileObject>> diagnostics = diagnosticCollector.getDiagnostics();
@@ -118,6 +94,33 @@ public final class JavaCompilerUtils {
         return classMap;
     }
 
+
+    /**
+     * 编译java源码
+     *
+     * @param javaFileObjects
+     * @return
+     */
+    public static boolean compiler(JavaFileManager javaFileManager, List<? extends JavaFileObject> javaFileObjects) {
+        // 获取编译器
+        JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
+
+        // 构建默认文件管理器  StandardJavaFileManager实例
+        if (javaFileManager == null) {
+            javaFileManager = javaCompiler.getStandardFileManager(null, null, null);
+        }
+
+        boolean result = javaCompiler.getTask(null, javaFileManager, null, null, null, javaFileObjects).call();
+
+        log.info("java source compilation " + (result ? "succeed" : "failed"));
+        try {
+            javaFileManager.close();
+        } catch (IOException e) {
+            log.warning("JavaFileManager close failed  message: " + e.getMessage());
+        }
+
+        return result;
+    }
 
     /**
      * 字符串源码构建JavaFileObject
