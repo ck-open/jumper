@@ -1,5 +1,7 @@
 package com.ck.core.mybatis;
 
+import com.ck.function.JavaCompilerUtils;
+
 /**
  * @ClassName DynamicLoadingMapper
  * @Description 动态生成加载Mapper工具类
@@ -8,6 +10,12 @@ package com.ck.core.mybatis;
  * @since 2023/3/31 9:51
  **/
 public class DynamicLoadingMapper {
+
+    public static void main(String[] args) {
+        String classStr = getBaseMapperJavaSource("User", "");
+        JavaCompilerUtils.compilerString(classStr);
+
+    }
 
     private static final String packagePath = "com.ck.db.mapper";
     private static final StringBuilder sourceCodeFormat = new StringBuilder();
@@ -18,7 +26,7 @@ public class DynamicLoadingMapper {
                 .append("import com.baomidou.mybatisplus.core.mapper.BaseMapper;")
                 .append("public interface PoClassNameMapper extends BaseMapper<PoClassName> {")
                 .append("@TableName(value = \"SQLTableName\")")
-                .append("class PoClassName implements Serializable{")
+                .append(" static class PoClassName implements Serializable{")
 
                 .append("SQLFields")
                 .append("}")
@@ -49,6 +57,7 @@ public class DynamicLoadingMapper {
     public static String getSqlTableName(String sql) {
         StringBuilder sqlTableName = new StringBuilder();
 
+        sqlTableName.append("user");
         return sqlTableName.toString();
     }
 
