@@ -106,7 +106,7 @@ public final class ClassUtils {
         try {
             return Class.forName(name);
         } catch (ClassNotFoundException e) {
-            throw new IllegalArgumentException("找不到指定的class！请仅在明确确定会有 class 的时候，调用该方法", e);
+            throw new IllegalArgumentException("找不到指定的class！请仅在明确确定会有 class 的时候，调用该方法.  className: " + name, e);
         }
     }
 

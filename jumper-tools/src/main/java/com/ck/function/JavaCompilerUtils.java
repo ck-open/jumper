@@ -1,10 +1,7 @@
 package com.ck.function;
 
 import javax.tools.*;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -29,7 +26,7 @@ public final class JavaCompilerUtils {
     private JavaCompilerUtils() {
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws ClassNotFoundException {
         StringBuilder sb = new StringBuilder();
         sb.append("package com.ck.function.compiler;");
         sb.append("public class TestCompiler {");
@@ -41,14 +38,23 @@ public final class JavaCompilerUtils {
         sb.append("public void setAddress(String address) {this.address = address;}");
         sb.append("}");
 
-        compiler(null, buildJavaFileObject(sb.toString()));
+//        compiler(null, buildJavaFileObject(sb.toString()));
+//
+//        Class<?> c = ClassUtils.getClassLoader().loadClass("com.ck.function.compiler.TestCompiler");
 
-//        Class<?> c = ClassUtils.getClassForName("com.ck.function.compiler.TestCompiler");
-
-        Map<String, Class<?>> classMap = compiler(sb.toString());
+        Map<String, Class<?>> classMap = compilerString(sb.toString());
         System.out.println(classMap);
-    }
 
+        classMap.values().forEach(i -> {
+            try {
+                Class.forName(i.getName());
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            }
+        });
+
+
+    }
 
     /**
      * 编译java源码并加载Class
@@ -56,42 +62,25 @@ public final class JavaCompilerUtils {
      * @param sourceCode
      * @return
      */
-    public static Map<String, Class<?>> compiler(String... sourceCode) {
+    public static boolean compilerFile(String... sourceCode) {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+        int result = compiler.run(null, null, null, sourceCode);
+        log.info("java source file compilation " + (result == 0 ? "succeed" : "failed"));
+        return result == 0;
+    }
 
-        // 通过DiagnosticListener得到诊断信息，而DiagnosticCollector类就是listener的实现。
-        DiagnosticCollector diagnosticCollector = new DiagnosticCollector();
-
+    /**
+     * 编译java源码并加载Class
+     *
+     * @param sourceCode
+     * @return
+     */
+    public static Map<String, Class<?>> compilerString(String... sourceCode) {
         // 构建文件管理器  StandardJavaFileManager实例
-        JavaFileManager fileManager = new MemoryJavaFileManager(ToolProvider.getSystemJavaCompiler().getStandardFileManager(diagnosticCollector, null, null));
+        JavaFileManager fileManager = new MemoryJavaFileManager(ToolProvider.getSystemJavaCompiler().getStandardFileManager(null, null, null));
 
-        // 编译源码
-        List<CharJavaFileObject> javaFileObjects = buildJavaFileObject(sourceCode);
-        boolean result = compiler(fileManager, javaFileObjects);
-
-        // 加载类
-        Map<String, Class<?>> classMap = new LinkedHashMap<>();
-        javaFileObjects.forEach(charJavaFileObject -> {
-            try {
-                if (result) {
-                    classMap.put(charJavaFileObject.getClassName(), fileManager.getClassLoader(null).loadClass(charJavaFileObject.getClassName()));
-                } else {
-                    classMap.put(charJavaFileObject.getClassName(), Class.forName(charJavaFileObject.getClassName()));
-                }
-            } catch (ClassNotFoundException e) {
-                log.warning("java source compilation failed  message: " + e.getMessage());
-            }
-        });
-
-
-        // 采集编译器的诊断信息
-        List<Diagnostic<CharJavaFileObject>> diagnostics = diagnosticCollector.getDiagnostics();
-        for (Diagnostic<CharJavaFileObject> diagnostic : diagnostics) {
-            log.info("line:" + diagnostic.getLineNumber());
-            log.info("msg:" + diagnostic.getMessage(Locale.SIMPLIFIED_CHINESE));
-            log.info("source:" + diagnostic.getSource());
-        }
-
-        return classMap;
+        // 编译源码 并 加载类
+        return compiler(fileManager, buildJavaFileObject(sourceCode));
     }
 
 
@@ -101,7 +90,7 @@ public final class JavaCompilerUtils {
      * @param javaFileObjects
      * @return
      */
-    public static boolean compiler(JavaFileManager javaFileManager, List<? extends JavaFileObject> javaFileObjects) {
+    public static Map<String, Class<?>> compiler(JavaFileManager javaFileManager, List<? extends JavaFileObject> javaFileObjects) {
         // 获取编译器
         JavaCompiler javaCompiler = ToolProvider.getSystemJavaCompiler();
 
@@ -119,7 +108,24 @@ public final class JavaCompilerUtils {
             log.warning("JavaFileManager close failed  message: " + e.getMessage());
         }
 
-        return result;
+        // 加载类
+        Map<String, Class<?>> classMap = new LinkedHashMap<>();
+        JavaFileManager finalJavaFileManager = javaFileManager;
+        javaFileObjects.forEach(javaFileObject -> {
+            String className = removeSuffixes(javaFileObject.getName()).replaceAll("/", ".");
+            ;
+            try {
+                if (result) {
+                    classMap.put(className, finalJavaFileManager.getClassLoader(StandardLocation.CLASS_PATH).loadClass(javaFileObject.getName()));
+                } else {
+                    classMap.put(className, Class.forName(javaFileObject.getName()));
+                }
+            } catch (Exception e) {
+                log.warning("java source ClassLoader failed className: " + javaFileObject.getName() + " message: " + e.getMessage());
+            }
+        });
+
+        return classMap;
     }
 
     /**
@@ -128,11 +134,9 @@ public final class JavaCompilerUtils {
      * @param sourceCode
      * @return
      */
-    public static List<CharJavaFileObject> buildJavaFileObject(String... sourceCode) {
-
+    public static List<JavaFileObject> buildJavaFileObject(String... sourceCode) {
         return Stream.of(sourceCode).map(code -> {
             String className = getSourceCodeClassName(code);
-
             return new CharJavaFileObject(className, code);
         }).collect(Collectors.toList());
     }
@@ -178,13 +182,33 @@ public final class JavaCompilerUtils {
 
 
     /**
+     * 转换类名 目录结构为包结构 并去掉 .java 或 .class 后缀
+     *
+     * @param className
+     * @return
+     */
+    public static String removeSuffixes(String className) {
+        if (className != null) {
+            if (className.startsWith("/")) {
+                className = className.substring(1);
+            }
+            if (className.endsWith(JavaFileObject.Kind.SOURCE.extension)) {
+                className = className.replace(JavaFileObject.Kind.SOURCE.extension, "");
+            } else if (className.endsWith(JavaFileObject.Kind.CLASS.extension)) {
+                className = className.replace(JavaFileObject.Kind.CLASS.extension, "");
+            }
+        }
+        return className;
+    }
+
+    /**
      * 将包路径转换为文件路径
      *
      * @param name
      * @return
      */
     public static URI toFileURI(String name) {
-        String prefix = "memory://";
+        String prefix = "memory:///";
         File file = new File(name);
         if (file.exists()) {// 如果文件存在，返回他的URI
             return file.toURI();
@@ -219,6 +243,7 @@ public final class JavaCompilerUtils {
             super(fileManager);
         }
 
+
         /**
          * 编译后加载类
          * <p>
@@ -230,13 +255,31 @@ public final class JavaCompilerUtils {
             return new SecureClassLoader() {
                 @Override
                 protected Class<?> findClass(String name) throws ClassNotFoundException {
-                    if (name != null) {
-                        if (name.endsWith(JavaFileObject.Kind.SOURCE.extension)) {
-                            name = name.replace(JavaFileObject.Kind.SOURCE.extension, "");
-                        } else if (name.endsWith(JavaFileObject.Kind.CLASS.extension)) {
-                            name = name.replace(JavaFileObject.Kind.CLASS.extension, "");
+                    String classFileName = JavaCompilerUtils.class.getResource("/").getPath()
+                            + removeSuffixes(name) + JavaFileObject.Kind.CLASS.extension;
+
+                    name = removeSuffixes(name).replaceAll("/", ".");
+                    if (!classJavaFileObject.containsKey(name)) {
+                        throw new NullPointerException("MemoryJavaFileManager JavaClassObject nonentity ClassName: " + name);
+                    }
+
+                    // 检查包路径 不存在则创建
+                    String path = classFileName.substring(0, classFileName.lastIndexOf("/"));
+                    File classPathFile = new File(path);
+                    if (!classPathFile.exists()) {
+                        classPathFile.mkdirs();
+                    }
+
+                    // 写出 .class 文件
+                    File classFile = new File(classFileName);
+                    if (!classFile.exists()) {
+                        try (FileOutputStream writer = new FileOutputStream(classFile)) {
+                            writer.write(classJavaFileObject.get(name).getBytes());
+                        } catch (IOException e) {
+                            log.warning("class file write failed className: " + name);
                         }
                     }
+
                     byte[] bytes = classJavaFileObject.get(name).getBytes();
                     return super.defineClass(name, bytes, 0, bytes.length);
                 }
