@@ -5,6 +5,7 @@ import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.mapper.MapperFactoryBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Map;
@@ -18,6 +19,7 @@ import java.util.stream.Stream;
  * @Version 1.0
  * @since 2023/3/31 9:51
  **/
+@Configuration
 @Slf4j
 public class SqlCompileBaseMapper {
     private static final StringBuilder sourceCodeFormat = new StringBuilder();
@@ -156,7 +158,7 @@ public class SqlCompileBaseMapper {
                         f.append(i.toUpperCase());
                     } else {
                         f.append(i.substring(0, 1).toUpperCase());
-                        if (f.length() > 1) {
+                        if (i.length() > 1) {
                             f.append(i.substring(1));
                         }
                     }
@@ -164,9 +166,10 @@ public class SqlCompileBaseMapper {
             }
             name = f.toString();
         } else if (name.length() > 0) {
-            name = name.substring(0, 1).toLowerCase();
-            if (name.length() > 1) {
-                name += name.substring(1);
+            if (name.length()>1){
+                name = name.substring(0, 1).toLowerCase() + name.substring(1);
+            }else{
+                name = name.substring(0, 1).toLowerCase();
             }
         }
         return name;
