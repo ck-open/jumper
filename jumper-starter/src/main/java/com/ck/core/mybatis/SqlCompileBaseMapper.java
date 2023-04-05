@@ -45,24 +45,15 @@ public class SqlCompileBaseMapper {
      * @param sql
      * @return
      */
-    public boolean resetBaseMapper(String className, String sql) {
+    public boolean registryBaseMapper(String className, String sql) {
         try {
             Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, className, sql);
             mapperClassMap.forEach((k, v) -> {
-                String beanName = SqlCompileUtils.camelCase(v.getSimpleName());
-
-                Object o = this.listableBeanFactory.getBean(beanName);
-                if (!BaseMapper.class.isAssignableFrom(o.getClass())) {
-                    throw new RuntimeException(String.format("重新生成失败，beanName [%s] 已存在", beanName));
-                }
-
-                this.listableBeanFactory.destroySingleton(beanName);
-
                 sqlSessionTemplate.getConfiguration().addMapper(v);
-                this.listableBeanFactory.registerSingleton(beanName, sqlSessionTemplate.getMapper(v));
+                this.listableBeanFactory.registerSingleton(SqlCompileUtils.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
             });
         } catch (Exception e) {
-            log.error(" 重置 Spring 注入自定义BaseMapper接口失败", e);
+            log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
             return false;
         }
         return true;
@@ -78,15 +69,40 @@ public class SqlCompileBaseMapper {
      * @param sql
      * @return
      */
-    public boolean registryBaseMapper(String className, String sql) {
+    public boolean resetBaseMapper(String className, String sql) {
         try {
             Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, className, sql);
             mapperClassMap.forEach((k, v) -> {
+                String beanName = SqlCompileUtils.camelCase(v.getSimpleName());
+
+                destroyBaseMapper(beanName);
+
                 sqlSessionTemplate.getConfiguration().addMapper(v);
-                this.listableBeanFactory.registerSingleton(SqlCompileUtils.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
+                this.listableBeanFactory.registerSingleton(beanName, sqlSessionTemplate.getMapper(v));
             });
         } catch (Exception e) {
-            log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
+            log.error(" 重置 Spring 注入自定义BaseMapper接口失败", e);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 卸载容器中的 BaseMapper 对象
+     *
+     * @param beanName
+     * @return
+     */
+    public boolean destroyBaseMapper(String beanName) {
+        try {
+            Object o = this.listableBeanFactory.getBean(beanName);
+            if (!BaseMapper.class.isAssignableFrom(o.getClass())) {
+                throw new RuntimeException(String.format("beanName [%s] 已存在，且非 BaseMapper 类型", beanName));
+            }
+
+            this.listableBeanFactory.destroySingleton(beanName);
+        } catch (Exception e) {
+            log.error("卸载 BaseMapper 失败 Error: " + e.getMessage(), e);
             return false;
         }
         return true;

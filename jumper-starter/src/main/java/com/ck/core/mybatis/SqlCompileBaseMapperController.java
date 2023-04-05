@@ -35,4 +35,18 @@ public class SqlCompileBaseMapperController {
 
         return TResult.ok(sqlCompileBaseMapper.resetBaseMapper(className, sql));
     }
+
+    @ApiOperation(value = "卸载BaseMapper")
+    @PostMapping("/destroy")
+    @ResponseBody
+    public TResult<Boolean> destroyMapper(@RequestParam(value = "className") String className) {
+
+//        Map<String, Class<?>> classMap = DynamicLoadingBaseMapper.getBaseMapperJavaSource("com.ck.db.mapper","UserCustomer", "select uc.name,uc.password,c.customer_code,c.nick_name,c.card_type,c.card_id\n" +
+//                "from user_credentials uc left join customer c on uc.customer_code=c.customer_code");
+
+        if (!className.endsWith("Mapper")) {
+            className += "Mapper";
+        }
+        return TResult.ok(sqlCompileBaseMapper.destroyBaseMapper(className));
+    }
 }
