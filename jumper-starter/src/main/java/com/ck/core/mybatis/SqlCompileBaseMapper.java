@@ -56,7 +56,7 @@ public class SqlCompileBaseMapper {
                     throw new RuntimeException(String.format("重新生成失败，beanName [%s] 已存在", beanName));
                 }
 
-                this.listableBeanFactory.removeBeanDefinition(beanName);
+                this.listableBeanFactory.destroySingleton(beanName);
 
                 sqlSessionTemplate.getConfiguration().addMapper(v);
                 this.listableBeanFactory.registerSingleton(beanName, sqlSessionTemplate.getMapper(v));
