@@ -14,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -98,7 +99,7 @@ public class JumperAutoConfiguration {
      */
     @Bean("sqlCompileBaseMapper")
     @ConditionalOnMissingBean(SqlCompileBaseMapper.class)
-    public SqlCompileBaseMapper sqlCompileBaseMapper(ConfigurableListableBeanFactory beanFactory, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
+    public SqlCompileBaseMapper sqlCompileBaseMapper(DefaultListableBeanFactory beanFactory, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
         SqlCompileBaseMapper sqlCompileBaseMapper = new SqlCompileBaseMapper(beanFactory, sqlSessionTemplate, jumperProperties);
         log.info("SqlCompileBaseMapper [{}]", sqlCompileBaseMapper);
         return sqlCompileBaseMapper;
