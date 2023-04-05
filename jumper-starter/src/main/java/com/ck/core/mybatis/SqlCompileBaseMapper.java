@@ -49,7 +49,7 @@ public class SqlCompileBaseMapper {
         try {
             Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, className, sql);
             mapperClassMap.forEach((k, v) -> {
-                String beanName = SqlCompileUtils.camelCase(className);
+                String beanName = SqlCompileUtils.camelCase(v.getSimpleName());
 
                 Object o = this.listableBeanFactory.getBean(beanName);
                 if (!BaseMapper.class.isAssignableFrom(o.getClass())) {
@@ -83,7 +83,7 @@ public class SqlCompileBaseMapper {
             Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, className, sql);
             mapperClassMap.forEach((k, v) -> {
                 sqlSessionTemplate.getConfiguration().addMapper(v);
-                this.listableBeanFactory.registerSingleton(SqlCompileUtils.camelCase(className), sqlSessionTemplate.getMapper(v));
+                this.listableBeanFactory.registerSingleton(SqlCompileUtils.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
             });
         } catch (Exception e) {
             log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
