@@ -29,5 +29,9 @@ public class JumperProperties {
      * 使用的数据库类型 参考${com.baomidou.mybatisplus.annotation.DbType}
      */
     private String DbType;
+    /**
+     * 动态生成的 BaseMapper 接口包路径
+     */
+    private String package_mapper;
 
 }

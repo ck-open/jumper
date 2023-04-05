@@ -5,10 +5,14 @@ import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
 import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import com.ck.core.feign.FeignClientUtils;
+import com.ck.core.feign.JumperFeign;
 import com.ck.core.interceptor.CheckRequestBodyInterceptor;
 import com.ck.core.mybatis.JumperQueryController;
+import com.ck.core.mybatis.SqlCompileBaseMapper;
 import com.ck.core.properties.JumperProperties;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -60,11 +64,38 @@ public class JumperAutoConfiguration {
      * @return
      */
     @Bean
+    @ConditionalOnMissingBean(JumperFeign.class)
+    public JumperFeign feignClientDynamic(ConfigurableListableBeanFactory beanFactory, ObjectMapper objectMapper) {
+        JumperFeign jumperFeign = new JumperFeign(beanFactory, objectMapper);
+        log.info("JumperFeign [{}]", jumperFeign);
+        return jumperFeign;
+    }
+
+
+    /**
+     * 依赖与 QueryUtil 工具构建的 公共数据查询接口
+     *
+     * @return
+     */
+    @Bean
     @ConditionalOnMissingBean(JumperQueryController.class)
     public JumperQueryController jumperQueryController() {
         JumperQueryController exceptionHandler = new JumperQueryController();
         log.info("JumperQueryController [{}]", exceptionHandler);
         return exceptionHandler;
+    }
+
+    /**
+     * 依赖与 QueryUtil 工具构建的 公共数据查询接口
+     *
+     * @return
+     */
+    @Bean
+    @ConditionalOnMissingBean(SqlCompileBaseMapper.class)
+    public SqlCompileBaseMapper jumperQueryController(ConfigurableListableBeanFactory beanFactory, JumperProperties jumperProperties) {
+        SqlCompileBaseMapper sqlCompileBaseMapper = new SqlCompileBaseMapper(beanFactory, jumperProperties);
+        log.info("SqlCompileBaseMapper [{}]", sqlCompileBaseMapper);
+        return sqlCompileBaseMapper;
     }
 
     /**

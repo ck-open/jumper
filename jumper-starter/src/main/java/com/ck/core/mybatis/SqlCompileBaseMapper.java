@@ -1,7 +1,11 @@
 package com.ck.core.mybatis;
 
+import com.ck.core.properties.JumperProperties;
 import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.mybatis.spring.mapper.MapperFactoryBean;
+import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.util.ObjectUtils;
 
 import java.util.Map;
 import java.util.Objects;
@@ -15,7 +19,7 @@ import java.util.stream.Stream;
  * @since 2023/3/31 9:51
  **/
 @Slf4j
-public class DynamicLoadingBaseMapper {
+public class SqlCompileBaseMapper {
     private static final StringBuilder sourceCodeFormat = new StringBuilder();
 
     static {
@@ -43,7 +47,7 @@ public class DynamicLoadingBaseMapper {
      * @param sql
      * @return
      */
-    public static Map<String, Class<?>> getBaseMapperJavaSource(String packagePath, String className, String sql) {
+    public static Map<String, Class<?>> getBaseMapperBySql(String packagePath, String className, String sql) {
         Objects.requireNonNull(packagePath, "未指定动态 BaseMapper package 地址");
         Objects.requireNonNull(className, "未指定动态 BaseMapper ClassName 名称");
         Objects.requireNonNull(sql, "未指定动态 BaseMapper Sql 语句");
@@ -127,27 +131,82 @@ public class DynamicLoadingBaseMapper {
                 classField = field.contains(".") ? field.substring(field.indexOf(".") + 1) : field;
             }
 
-            // 参数名驼峰
-            if (classField.contains("_")) {
-                StringBuilder f = new StringBuilder();
-                String[] s = classField.split("_");
-                for (String i : s) {
-                    if (f.length() < 1) {
-                        f.append(i.toLowerCase());
-                    } else {
-                        if (i.length() < 1) {
-                            f.append(i.toUpperCase());
-                        } else {
-                            f.append(i.substring(0, 1).toUpperCase()).append(i.substring(1));
-                        }
-                    }
-                }
-                classField = f.toString();
-            }
             sqlFields.append("        @TableField(\"").append(tableField).append("\")").append("\n")
-                    .append("        private ").append("Object").append(" ").append(classField).append(";").append("\n");
+                    .append("        private ").append("Object").append(" ").append(camelCase(classField)).append(";").append("\n");
         });
 
         return sqlFields.toString();
     }
+
+    /**
+     * 驼峰命名
+     *
+     * @param name
+     * @return
+     */
+    public static String camelCase(String name) {
+        if (name.contains("_")) {
+            StringBuilder f = new StringBuilder();
+            String[] s = name.split("_");
+            for (String i : s) {
+                if (f.length() < 1) {
+                    f.append(i.toLowerCase());
+                } else {
+                    if (i.length() < 1) {
+                        f.append(i.toUpperCase());
+                    } else {
+                        f.append(i.substring(0, 1).toUpperCase());
+                        if (f.length() > 1) {
+                            f.append(i.substring(1));
+                        }
+                    }
+                }
+            }
+            name = f.toString();
+        } else if (name.length() > 0) {
+            name = name.substring(0, 1).toLowerCase();
+            if (name.length() > 1) {
+                name += name.substring(1);
+            }
+        }
+        return name;
+    }
+
+
+    private ConfigurableListableBeanFactory beanPostProcessor;
+    private JumperProperties jumperProperties;
+
+    public SqlCompileBaseMapper(ConfigurableListableBeanFactory beanPostProcessor, JumperProperties jumperProperties) {
+        this.beanPostProcessor = beanPostProcessor;
+        this.jumperProperties = jumperProperties;
+    }
+
+    /**
+     * 编译自定义 sql 为 BaseMapper 接口并注入到 Spring 容器
+     *
+     * @param beanName
+     * @param sql
+     * @return
+     */
+    public boolean registryBaseMapper(String beanName, String sql) {
+        try {
+            String packagePath = "jumper.db.mapper";
+            if (!ObjectUtils.isEmpty(this.jumperProperties) && !ObjectUtils.isEmpty(this.jumperProperties.getPackage_mapper())) {
+                packagePath = this.jumperProperties.getPackage_mapper();
+            }
+            Map<String, Class<?>> mapperClassMap = getBaseMapperBySql(packagePath, beanName, sql);
+            mapperClassMap.forEach((k, v) -> {
+                // 将构建出的BaseMapper 接口注入到Spring
+                MapperFactoryBean<?> factoryBean = new MapperFactoryBean<>(v);
+
+                this.beanPostProcessor.registerSingleton(camelCase(v.getSimpleName()),factoryBean);
+            });
+        } catch (Exception e) {
+            log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
+            return false;
+        }
+
+        return true;
+    }
+
 }
