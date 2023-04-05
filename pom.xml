@@ -24,7 +24,6 @@
         <fastjson.version>1.2.68</fastjson.version>
 
         <spring-boot.version>2.6.4</spring-boot.version>
-        <swagger.version>3.0.3</swagger.version>
     </properties>
 
     <dependencies>
