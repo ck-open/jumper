@@ -3,7 +3,7 @@ package com.ck.core.mybatis;
 import com.ck.core.properties.JumperProperties;
 import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.mybatis.spring.mapper.MapperFactoryBean;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ObjectUtils;
@@ -177,10 +177,12 @@ public class SqlCompileBaseMapper {
 
 
     private ConfigurableListableBeanFactory beanPostProcessor;
+    private SqlSessionTemplate sqlSessionTemplate;
     private JumperProperties jumperProperties;
 
-    public SqlCompileBaseMapper(ConfigurableListableBeanFactory beanPostProcessor, JumperProperties jumperProperties) {
+    public SqlCompileBaseMapper(ConfigurableListableBeanFactory beanPostProcessor,SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
         this.beanPostProcessor = beanPostProcessor;
+        this.sqlSessionTemplate = sqlSessionTemplate;
         this.jumperProperties = jumperProperties;
     }
 
@@ -199,10 +201,8 @@ public class SqlCompileBaseMapper {
             }
             Map<String, Class<?>> mapperClassMap = getBaseMapperBySql(packagePath, beanName, sql);
             mapperClassMap.forEach((k, v) -> {
-                // 将构建出的BaseMapper 接口注入到Spring
-                MapperFactoryBean<?> factoryBean = new MapperFactoryBean<>(v);
-
-                this.beanPostProcessor.registerSingleton(camelCase(v.getSimpleName()),factoryBean);
+                sqlSessionTemplate.getConfiguration().addMapper(v);
+                this.beanPostProcessor.registerSingleton(camelCase(v.getSimpleName()),sqlSessionTemplate.getMapper(v));
             });
         } catch (Exception e) {
             log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
