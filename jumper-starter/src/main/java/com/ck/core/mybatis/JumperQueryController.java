@@ -31,6 +31,7 @@ public class JumperQueryController {
 
     /**
      * 查询分页数据
+     *
      * @param mapperBeanName
      * @param dto
      * @param <T>
@@ -61,6 +62,7 @@ public class JumperQueryController {
 
     /**
      * 查询列表数据
+     *
      * @param mapperBeanName
      * @param dto
      * @param <T>
@@ -119,8 +121,12 @@ public class JumperQueryController {
         try {
             if (!mapperBeanName.endsWith("Mapper")) mapperBeanName += "Mapper";
             return applicationContext.getBean(mapperBeanName, BaseMapper.class);
-        } catch (Exception ignored) {
-            return applicationContext.getBean(mapperBeanName.replaceAll("Mapper","Dao"), BaseMapper.class);
+        } catch (Exception e) {
+            try {
+                return applicationContext.getBean(mapperBeanName.replaceAll("Mapper", "Dao"), BaseMapper.class);
+            } catch (Exception ignored) {
+                return null;
+            }
         }
     }
 }
