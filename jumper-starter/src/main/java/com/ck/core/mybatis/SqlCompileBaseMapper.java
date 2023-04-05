@@ -24,12 +24,12 @@ public class SqlCompileBaseMapper {
 
     @Resource
     private ApplicationContext applicationContext;
-    private ConfigurableListableBeanFactory beanPostProcessor;
+    private ConfigurableListableBeanFactory listableBeanFactory;
     private SqlSessionTemplate sqlSessionTemplate;
     private JumperProperties jumperProperties;
 
-    public SqlCompileBaseMapper(ConfigurableListableBeanFactory beanPostProcessor, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
-        this.beanPostProcessor = beanPostProcessor;
+    public SqlCompileBaseMapper(ConfigurableListableBeanFactory listableBeanFactory, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
+        this.listableBeanFactory = listableBeanFactory;
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.jumperProperties = jumperProperties;
     }
@@ -53,7 +53,7 @@ public class SqlCompileBaseMapper {
             Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, beanName, sql);
             mapperClassMap.forEach((k, v) -> {
                 sqlSessionTemplate.getConfiguration().addMapper(v);
-                this.beanPostProcessor.registerSingleton(SqlCompileUtils.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
+                this.listableBeanFactory.registerSingleton(SqlCompileUtils.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
             });
         } catch (Exception e) {
             log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
