@@ -5,7 +5,6 @@ import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.util.ObjectUtils;
 
 import java.util.Map;
@@ -19,7 +18,7 @@ import java.util.stream.Stream;
  * @Version 1.0
  * @since 2023/3/31 9:51
  **/
-@Configuration
+//@Configuration
 @Slf4j
 public class SqlCompileBaseMapper {
     private static final StringBuilder sourceCodeFormat = new StringBuilder();

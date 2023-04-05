@@ -66,7 +66,7 @@ public class JumperAutoConfiguration {
      */
     @Bean
     @ConditionalOnMissingBean(JumperFeign.class)
-    public JumperFeign feignClientDynamic(ConfigurableListableBeanFactory beanFactory, ObjectMapper objectMapper) {
+    public JumperFeign jumperFeign(ConfigurableListableBeanFactory beanFactory, ObjectMapper objectMapper) {
         JumperFeign jumperFeign = new JumperFeign(beanFactory, objectMapper);
         log.info("JumperFeign [{}]", jumperFeign);
         return jumperFeign;
@@ -91,9 +91,9 @@ public class JumperAutoConfiguration {
      *
      * @return
      */
-    @Bean
+    @Bean("sqlCompileBaseMapper")
     @ConditionalOnMissingBean(SqlCompileBaseMapper.class)
-    public SqlCompileBaseMapper jumperQueryController(ConfigurableListableBeanFactory beanFactory, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
+    public SqlCompileBaseMapper sqlCompileBaseMapper(ConfigurableListableBeanFactory beanFactory, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
         SqlCompileBaseMapper sqlCompileBaseMapper = new SqlCompileBaseMapper(beanFactory, sqlSessionTemplate, jumperProperties);
         log.info("SqlCompileBaseMapper [{}]", sqlCompileBaseMapper);
         return sqlCompileBaseMapper;
