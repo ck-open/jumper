@@ -1,185 +1,34 @@
 package com.ck.core.mybatis;
 
 import com.ck.core.properties.JumperProperties;
-import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.util.ObjectUtils;
 
+import javax.annotation.Resource;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 /**
- * @ClassName Dynamic Loading MyBatis Plus BaseMapper
- * @Description 动态生成加载 BaseMapper 工具类
+ * @ClassName SqlCompileBaseMapper
+ * @Description 依据自定义SQL 生成 mybatis plus BaseMapper  并注入到 Spring 容器
  * @Author Cyk
  * @Version 1.0
- * @since 2023/3/31 9:51
+ * @since 2023/1/30 13:37
  **/
-//@Configuration
 @Slf4j
 public class SqlCompileBaseMapper {
-    private static final StringBuilder sourceCodeFormat = new StringBuilder();
 
-    static {
-        sourceCodeFormat
-                .append("package PackagePath;").append("\n")
-                .append("import com.baomidou.mybatisplus.annotation.TableField;").append("\n")
-                .append("import com.baomidou.mybatisplus.annotation.TableName;").append("\n")
-                .append("import org.apache.ibatis.annotations.Mapper;").append("\n")
-                .append("import com.baomidou.mybatisplus.core.mapper.BaseMapper;").append("\n")
-                .append("import lombok.Data;").append("\n")
-                .append("import java.io.Serializable;").append("\n")
-                .append("public interface PoClassNameMapper extends BaseMapper<PoClassNameMapper.PoClassName> {").append("\n")
-                .append("    @Data").append("\n")
-                .append("    @TableName(value = \"SQLTableName\")").append("\n")
-                .append("    public static class PoClassName implements Serializable{").append("\n")
-                .append("SQLFields").append("\n")
-                .append("    }").append("\n")
-                .append("}");
-    }
-
-    /**
-     * 根据自定义 Sql 生成 MyBatis Plus BaseMapper<PO> 接口源码
-     *
-     * @param className
-     * @param sql
-     * @return
-     */
-    public static Map<String, Class<?>> getBaseMapperBySql(String packagePath, String className, String sql) {
-        Objects.requireNonNull(packagePath, "未指定动态 BaseMapper package 地址");
-        Objects.requireNonNull(className, "未指定动态 BaseMapper ClassName 名称");
-        Objects.requireNonNull(sql, "未指定动态 BaseMapper Sql 语句");
-
-        String javaSource = sourceCodeFormat.toString();
-        javaSource = javaSource.replaceAll("PackagePath", packagePath);
-        javaSource = javaSource.replaceAll("PoClassName", className);
-
-        sql = sql.replaceAll("\\r", " ").replaceAll("\\n", " ");
-        javaSource = javaSource.replaceAll("SQLTableName", getSqlTableName(sql));
-        javaSource = javaSource.replaceAll("SQLFields", getSqlPoFields(sql));
-
-        log.info("动态生成 MyBatis Plus BaseMapper 查询接口\n {}", javaSource);
-        return JavaCompilerUtils.compilerString(javaSource);
-    }
-
-    /**
-     * 获取自定义 sql 表名
-     *
-     * @param sql
-     * @return
-     */
-    private static String getSqlTableName(String sql) {
-        StringBuilder sqlTableName = new StringBuilder();
-
-        if (sql.contains("FROM")) {
-            sql.replace("FROM", "from");
-        }
-        if (sql.contains("where")) {
-            sqlTableName.append(sql, sql.indexOf("from "), sql.indexOf("where"));
-        } else if (sql.contains("order by")) {
-            sqlTableName.append(sql, sql.indexOf("from "), sql.indexOf("order by"));
-        } else if (sql.contains("group by")) {
-            sqlTableName.append(sql, sql.indexOf("from "), sql.indexOf("group by"));
-        } else if (sql.contains("limit")) {
-            sqlTableName.append(sql, sql.indexOf("from "), sql.indexOf("limit"));
-        } else {
-            sqlTableName.append(sql, sql.indexOf("from "), sql.length());
-        }
-        return sqlTableName.append(" ").toString().replace("from", "");
-    }
-
-    /**
-     * 获取自定义 sql Po字段
-     *
-     * @param sql
-     * @return
-     */
-    private static String getSqlPoFields(String sql) {
-        StringBuilder sqlFields = new StringBuilder();
-
-        String fieldsSql = sql.substring(0, sql.indexOf(" from")).replace("select ", "");
-        String[] fields = fieldsSql.split(",");
-        Stream.of(fields).forEach(field -> {
-            field = field.replaceAll(" {2}", " ");
-            if (field.startsWith(" ")) {
-                field = field.substring(1);
-            }
-            if (field.endsWith(" ")) {
-                field = field.substring(0, field.lastIndexOf(" "));
-            }
-            if (field.contains(" ")) {
-                field = field.replace(" ", " AS ");
-            }
-
-            if (field.contains(" As ")) {
-                field = field.replace(" As ", " AS ");
-            } else if (field.contains(" as ")) {
-                field = field.replace(" as ", " AS ");
-            }
-
-            String tableField;
-            String classField;
-            if (field.contains(" AS ")) {
-                String[] s = field.split(" AS ");
-                tableField = s[0].trim();
-                classField = s[1].trim();
-                classField = classField.contains(".") ? classField.substring(classField.indexOf(".") + 1) : field;
-            } else {
-                tableField = field;
-                classField = field.contains(".") ? field.substring(field.indexOf(".") + 1) : field;
-            }
-
-            sqlFields.append("        @TableField(\"").append(tableField).append("\")").append("\n")
-                    .append("        private ").append("Object").append(" ").append(camelCase(classField)).append(";").append("\n");
-        });
-
-        return sqlFields.toString();
-    }
-
-    /**
-     * 驼峰命名
-     *
-     * @param name
-     * @return
-     */
-    public static String camelCase(String name) {
-        if (name.contains("_")) {
-            StringBuilder f = new StringBuilder();
-            String[] s = name.split("_");
-            for (String i : s) {
-                if (f.length() < 1) {
-                    f.append(i.toLowerCase());
-                } else {
-                    if (i.length() < 1) {
-                        f.append(i.toUpperCase());
-                    } else {
-                        f.append(i.substring(0, 1).toUpperCase());
-                        if (i.length() > 1) {
-                            f.append(i.substring(1));
-                        }
-                    }
-                }
-            }
-            name = f.toString();
-        } else if (name.length() > 0) {
-            if (name.length()>1){
-                name = name.substring(0, 1).toLowerCase() + name.substring(1);
-            }else{
-                name = name.substring(0, 1).toLowerCase();
-            }
-        }
-        return name;
-    }
-
-
+    @Resource
+    private ApplicationContext applicationContext;
     private ConfigurableListableBeanFactory beanPostProcessor;
     private SqlSessionTemplate sqlSessionTemplate;
     private JumperProperties jumperProperties;
 
-    public SqlCompileBaseMapper(ConfigurableListableBeanFactory beanPostProcessor,SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
+    public SqlCompileBaseMapper(ConfigurableListableBeanFactory beanPostProcessor, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
         this.beanPostProcessor = beanPostProcessor;
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.jumperProperties = jumperProperties;
@@ -187,6 +36,9 @@ public class SqlCompileBaseMapper {
 
     /**
      * 编译自定义 sql 为 BaseMapper 接口并注入到 Spring 容器
+     * <p>
+     * 生成的 Mapper.class 存储的包路径  优先 配置文件中的 jumper.package_mapper 进行配置
+     * 默认 保存在项目路径 jumper.db.mapper 路径下
      *
      * @param beanName
      * @param sql
@@ -198,17 +50,39 @@ public class SqlCompileBaseMapper {
             if (!ObjectUtils.isEmpty(this.jumperProperties) && !ObjectUtils.isEmpty(this.jumperProperties.getPackage_mapper())) {
                 packagePath = this.jumperProperties.getPackage_mapper();
             }
-            Map<String, Class<?>> mapperClassMap = getBaseMapperBySql(packagePath, beanName, sql);
+            Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, beanName, sql);
             mapperClassMap.forEach((k, v) -> {
                 sqlSessionTemplate.getConfiguration().addMapper(v);
-                this.beanPostProcessor.registerSingleton(camelCase(v.getSimpleName()),sqlSessionTemplate.getMapper(v));
+                this.beanPostProcessor.registerSingleton(SqlCompileUtils.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
             });
         } catch (Exception e) {
             log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
             return false;
         }
-
         return true;
     }
 
+
+    /**
+     * 启动事件监听  自动注入自定义SQL 生成 BaseMapper
+     *
+     * @author Cyk
+     * @since 14:37 2022/7/15
+     **/
+    @EventListener({ApplicationReadyEvent.class})
+    public void applicationReadyEvent() {
+        if (this.applicationContext != null) {
+            Map<String, SqlCompileSupplier> sqlCompileSuppliers = this.applicationContext.getBeansOfType(SqlCompileSupplier.class);
+            if (ObjectUtils.isEmpty(sqlCompileSuppliers)) {
+                log.info("无需要自动生成 BaseMapper 的 SqlCompileSupplier");
+                return;
+            }
+            sqlCompileSuppliers.forEach((name, sqlCompileSupplier) -> {
+                Map<String, String> sqlMap = sqlCompileSupplier.getSql();
+                if (!ObjectUtils.isEmpty(sqlMap)) {
+                    sqlMap.forEach(this::registryBaseMapper);
+                }
+            });
+        }
+    }
 }

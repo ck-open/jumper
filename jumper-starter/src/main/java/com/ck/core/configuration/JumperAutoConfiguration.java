@@ -22,7 +22,12 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
-
+/**
+ * @ClassName JumperAutoConfiguration
+ * @Author Cyk
+ * @Version 1.0
+ * @since 2023/1/30 13:37
+ **/
 @Slf4j
 @ConditionalOnProperty(prefix = "jumper", name = "enabled", havingValue = "true")
 @Configuration
@@ -118,5 +123,4 @@ public class JumperAutoConfiguration {
         log.info("MybatisPlusInterceptor [{}]", interceptor);
         return interceptor;
     }
-
 }
