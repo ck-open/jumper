@@ -9,6 +9,7 @@ import com.ck.core.feign.JumperFeign;
 import com.ck.core.interceptor.CheckRequestBodyInterceptor;
 import com.ck.core.mybatis.JumperQueryController;
 import com.ck.core.mybatis.SqlCompileBaseMapper;
+import com.ck.core.mybatis.SqlCompileBaseMapperController;
 import com.ck.core.properties.JumperProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +90,20 @@ public class JumperAutoConfiguration {
     public JumperQueryController jumperQueryController() {
         JumperQueryController exceptionHandler = new JumperQueryController();
         log.info("JumperQueryController [{}]", exceptionHandler);
+        return exceptionHandler;
+    }
+
+    /**
+     * 依赖与 QueryUtil 工具构建的 公共数据查询接口
+     *
+     * @return
+     */
+    @Bean
+    @ConditionalOnProperty(prefix = "jumper.SqlCompile", name = "controller", havingValue = "true")
+    @ConditionalOnMissingBean(SqlCompileBaseMapperController.class)
+    public SqlCompileBaseMapperController sqlCompileBaseMapperController() {
+        SqlCompileBaseMapperController exceptionHandler = new SqlCompileBaseMapperController();
+        log.info("SqlCompileBaseMapperController [{}]", exceptionHandler);
         return exceptionHandler;
     }
 

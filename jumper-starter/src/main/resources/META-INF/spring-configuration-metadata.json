@@ -4,6 +4,11 @@
       "name": "jumper.enabled",
       "type": "java.lang.Boolean",
       "description": "开启 Jumper 支持."
+    },
+    {
+      "name": "jumper.SqlCompile.controller",
+      "type": "java.lang.Boolean",
+      "description": "开启 Sql 编译注入 BaseMapper 接口."
     }
   ]
 }

@@ -1,0 +1,38 @@
+package com.ck.core.mybatis;
+
+import com.ck.api.TResult;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+
+@Api(tags = "动态加载BaseMapper")
+@RequestMapping("/jumperSqlCompile")
+public class SqlCompileBaseMapperController {
+
+    @Resource
+    private SqlCompileBaseMapper sqlCompileBaseMapper;
+
+    @ApiOperation(value = "Sql动态构建BaseMapper")
+    @PostMapping("/registry")
+    @ResponseBody
+    public TResult<Boolean> registryMapper(@RequestParam(value = "className") String className, @RequestBody String sql) {
+
+//        Map<String, Class<?>> classMap = DynamicLoadingBaseMapper.getBaseMapperJavaSource("com.ck.db.mapper","UserCustomer", "select uc.name,uc.password,c.customer_code,c.nick_name,c.card_type,c.card_id\n" +
+//                "from user_credentials uc left join customer c on uc.customer_code=c.customer_code");
+
+        return TResult.ok(sqlCompileBaseMapper.registryBaseMapper(className, sql));
+    }
+
+    @ApiOperation(value = "重置Sql动态构建BaseMapper")
+    @PostMapping("/reset")
+    @ResponseBody
+    public TResult<Boolean> resetMapper(@RequestParam(value = "className") String className, @RequestBody String sql) {
+
+//        Map<String, Class<?>> classMap = DynamicLoadingBaseMapper.getBaseMapperJavaSource("com.ck.db.mapper","UserCustomer", "select uc.name,uc.password,c.customer_code,c.nick_name,c.card_type,c.card_id\n" +
+//                "from user_credentials uc left join customer c on uc.customer_code=c.customer_code");
+
+        return TResult.ok(sqlCompileBaseMapper.resetBaseMapper(className, sql));
+    }
+}
