@@ -558,4 +558,162 @@
 >>     }
 >> ```
 
+## 运行时动态生成 BaseMapper 接口并注入容器
+> + 通过自定义Sql语句（不支持sql中有子查询）动态生成 继承自BaseMapper的 interface.class 文件以及 Po内部类。
+> + 提供 动态BaseMapper 在Spring 容器的注入、销毁和重载方法
+> + 动态生成的 BaseMapper 可直接使用公共查询接口进行查询
+>
+> ### 自动生成的 class文件
+>> 生成过程如下：
+>>> 1. 将 sql 语句解析成字符串表述的 XXXBaseMapper.java 源码文本字符串。
+>>> 2. 将 XXXBaseMapper.java 源码文本字符串 通过 JavaCompiler 编译成.class文件。
+>>> 3. 将编译后的.class文件写出的指定的项目目录下，并加载到JVM。
+>>> 4. 将 得到的 Class<?> 接口 加载到 SqlSessionTemplate.Configuration 的 Mapper 列表中。
+>>> 5. 根据加载的 Class<?> 接口 构建BaseMapper 默认实现对象，并加载到 Spring 容器。
+>>> 6. 此时就可以通过上面介绍的 JumperQueryController 公共查询接口进行相关查询操作了。
+>
+> ### Sql生成的 BaseMapper.java 源码
+>> + 生成的源码文件不会文件保存，但会在日志中打印。
+>> + Sql中不需要携带 where 条件，携带也将会被忽略，所有的查询条件都需要在使用时由使用者指定。
+>> + Sql 中不可以使用 select * 查询，因为需要根据指定的参数构建Po对象。可以指定别名，不指定将自动驼峰。
+>> + Sql 生成过程示例：
+>>> ```sql
+>>>     select uc.name,uc.password,c.customer_code,c.nick_name,c.card_type,c.card_id 
+>>>     from user_credentials uc left join customer c on uc.customer_code=c.customer_code
+>>> ```
+>>> ```java
+>>>    package jumper.db.mapper;
+>>>    import com.baomidou.mybatisplus.annotation.TableField;
+>>>    import com.baomidou.mybatisplus.annotation.TableName;
+>>>    import org.apache.ibatis.annotations.Mapper;
+>>>    import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+>>>    import lombok.Data;
+>>>    import java.io.Serializable;
+>>>    public interface UserInfoMapper extends BaseMapper<UserInfoMapper.UserInfo> {
+>>>        @Data
+>>>        @TableName(value = " user_credentials uc left join customer c on uc.customer_code=c.customer_code ")
+>>>        public static class UserInfo implements Serializable{
+>>>            @TableField("uc.name")
+>>>            private Object name;
+>>>            @TableField("uc.password")
+>>>            private Object password;
+>>>            @TableField("c.customer_code")
+>>>            private Object customerCode;
+>>>            @TableField("c.nick_name")
+>>>            private Object nickName;
+>>>            @TableField("c.card_type")
+>>>            private Object cardType;
+>>>            @TableField("c.card_id")
+>>>            private Object cardId;
+>>>    
+>>>        }
+>>>    }
+>>> ```
+>
+>
+> ### 自定义 SQL BaseMapper 启动时自动注入
+>> + 向容器中注入 SqlCompileSupplier 接口实例。
+>> + 在服务启动后会调用 SqlCompileSupplier接口的 getSql() 方法进行自动构建 BaseMapper 并注入容器。
+>> + 示例：
+>>> ```java
+>>>     @Configuration
+>>>     public class SqlCompile implements SqlCompileSupplier {
+>>>         /**
+>>>          * 需要编译的 Sql 列表
+>>>          * key: beanName  value: Sql语句
+>>>          *
+>>>          * @return
+>>>          */
+>>>         @Override
+>>>         public Map<String, String> getSql() {
+>>>             Map<String,String> sqlMap = new HashMap<>();
+>>>             
+>>>             sqlMap.put("UserInfo","select uc.name,uc.password,c.customer_code,c.nick_name,c.card_type,c.card_id from user_credentials uc left join customer c on uc.customer_code=c.customer_code");
+>>>             
+>>>             return sqlMap;
+>>>         }
+>>>     }
+>>> ```
+>
+> ### 运行时 动态BaseMapper 构建销毁操作
+>> 以下接口已集成，可以参考在项目中自定义改造。接口默认不可用 需要在yml配置中添加开启参数
+>> 接口示例：
+>>> ```java
+>>>     @Api(tags = "动态加载BaseMapper")
+>>>     @RequestMapping("/jumperSqlCompile")
+>>>     public class SqlCompileBaseMapperController {
+>>>     
+>>>         @Resource
+>>>         private SqlCompileBaseMapper sqlCompileBaseMapper;
+>>>     
+>>>         @ApiOperation(value = "Sql动态构建BaseMapper")
+>>>         @GetMapping("/registry")
+>>>         @ResponseBody
+>>>         public TResult<Boolean> registryMapper(@RequestParam(value = "className") String className, @RequestParam(value = "sql") String sql) {
+>>> 
+>>>             return TResult.ok(sqlCompileBaseMapper.registryBaseMapper(className, sql));
+>>>         }
+>>>     
+>>>         @ApiOperation(value = "重置Sql动态构建BaseMapper")
+>>>         @GetMapping("/reset")
+>>>         @ResponseBody
+>>>         public TResult<Boolean> resetMapper(@RequestParam(value = "className") String className, @RequestParam(value = "sql") String sql) {
+>>> 
+>>>             return TResult.ok(sqlCompileBaseMapper.resetBaseMapper(className, sql));
+>>>         }
+>>>     
+>>>         @ApiOperation(value = "卸载BaseMapper")
+>>>         @GetMapping("/destroy")
+>>>         @ResponseBody
+>>>         public TResult<Boolean> destroyMapper(@RequestParam(value = "className") String className) {
+>>> 
+>>>             if (!className.endsWith("Mapper")) {
+>>>                 className += "Mapper";
+>>>             }
+>>>             return TResult.ok(sqlCompileBaseMapper.destroyBaseMapper(className));
+>>>         }
+>>>     }
+>>> ```
+>
+>### 配置参数信息
+>> ```json
+>>  {
+>>    "properties": [
+>>      {
+>>        "name": "jumper.enabled",
+>>        "type": "java.lang.Boolean",
+>>        "description": "开启 Jumper 支持."
+>>      },
+>>      {
+>>        "name": "jumper.SqlCompile.controller",
+>>        "type": "java.lang.Boolean",
+>>        "description": "开启 Sql 编译注入 BaseMapper 接口."
+>>      },{
+>>        "name": "jumper.package_mapper",
+>>        "type": "java.lang.String",
+>>        "description": "保存生成的BaseMapper class文件的包地址"
+>>      },{
+>>        "name": "jumper.DbType",
+>>        "type": "java.lang.String",
+>>        "description": "数据库类型 默认Mysql"
+>>      }
+>>    ]
+>>  }
+>> ```
+>
+>## 注意
+>> ### 不配置 jumper.package_mapper 参数时
+>>> 不指定编译后的 class文件存储包路径，则默认使用 jumper.db.mapper，保存在项目下。
+>>> 使用 jumper.db.mapper 包路径时，注意Sql日志打印问题，如果需要打印，则需要设置此路径的日志级别。
+>>> 结构如下：
+>>> ```text
+>>>  ├── classes
+>>>     ├── com  项目代码包
+>>>     ├── jumper
+>>>         ├── db
+>>>             ├── mapper
+>>>                 ├── UserInfoMapper.class
+>>> ```
+>
+>
 
