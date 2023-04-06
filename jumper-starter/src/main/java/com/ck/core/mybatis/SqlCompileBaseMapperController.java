@@ -15,9 +15,9 @@ public class SqlCompileBaseMapperController {
     private SqlCompileBaseMapper sqlCompileBaseMapper;
 
     @ApiOperation(value = "Sql动态构建BaseMapper")
-    @PostMapping("/registry")
+    @GetMapping("/registry")
     @ResponseBody
-    public TResult<Boolean> registryMapper(@RequestParam(value = "className") String className, @RequestBody String sql) {
+    public TResult<Boolean> registryMapper(@RequestParam(value = "className") String className, @RequestParam(value = "sql") String sql) {
 
 //        Map<String, Class<?>> classMap = DynamicLoadingBaseMapper.getBaseMapperJavaSource("com.ck.db.mapper","UserCustomer", "select uc.name,uc.password,c.customer_code,c.nick_name,c.card_type,c.card_id\n" +
 //                "from user_credentials uc left join customer c on uc.customer_code=c.customer_code");
@@ -26,9 +26,9 @@ public class SqlCompileBaseMapperController {
     }
 
     @ApiOperation(value = "重置Sql动态构建BaseMapper")
-    @PostMapping("/reset")
+    @GetMapping("/reset")
     @ResponseBody
-    public TResult<Boolean> resetMapper(@RequestParam(value = "className") String className, @RequestBody String sql) {
+    public TResult<Boolean> resetMapper(@RequestParam(value = "className") String className, @RequestParam(value = "sql") String sql) {
 
 //        Map<String, Class<?>> classMap = DynamicLoadingBaseMapper.getBaseMapperJavaSource("com.ck.db.mapper","UserCustomer", "select uc.name,uc.password,c.customer_code,c.nick_name,c.card_type,c.card_id\n" +
 //                "from user_credentials uc left join customer c on uc.customer_code=c.customer_code");
@@ -37,7 +37,7 @@ public class SqlCompileBaseMapperController {
     }
 
     @ApiOperation(value = "卸载BaseMapper")
-    @PostMapping("/destroy")
+    @GetMapping("/destroy")
     @ResponseBody
     public TResult<Boolean> destroyMapper(@RequestParam(value = "className") String className) {
 
