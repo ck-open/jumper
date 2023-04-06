@@ -9,6 +9,14 @@
       "name": "jumper.SqlCompile.controller",
       "type": "java.lang.Boolean",
       "description": "开启 Sql 编译注入 BaseMapper 接口."
+    },{
+      "name": "jumper.package_mapper",
+      "type": "java.lang.String",
+      "description": "保存生成的BaseMapper class文件的包地址"
+    },{
+      "name": "jumper.DbType",
+      "type": "java.lang.String",
+      "description": "数据库类型 默认Mysql"
     }
   ]
 }
