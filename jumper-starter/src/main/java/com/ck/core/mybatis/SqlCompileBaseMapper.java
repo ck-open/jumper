@@ -25,13 +25,21 @@ public class SqlCompileBaseMapper {
     private SqlSessionTemplate sqlSessionTemplate;
     private JumperProperties jumperProperties;
     private String packagePath = "jumper.db.mapper";
+    private SqlCompileConfiguration sqlCompileConfiguration;
 
     public SqlCompileBaseMapper(DefaultListableBeanFactory listableBeanFactory, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
         this.listableBeanFactory = listableBeanFactory;
         this.sqlSessionTemplate = sqlSessionTemplate;
         this.jumperProperties = jumperProperties;
+
         if (!ObjectUtils.isEmpty(this.jumperProperties) && !ObjectUtils.isEmpty(this.jumperProperties.getPackage_mapper())) {
             this.packagePath = this.jumperProperties.getPackage_mapper();
+        }
+
+        try {
+            this.sqlCompileConfiguration = this.listableBeanFactory.getBean(SqlCompileConfiguration.class);
+        } catch (Exception e) {
+            this.sqlCompileConfiguration = new SqlCompileConfiguration();
         }
     }
 
@@ -47,10 +55,10 @@ public class SqlCompileBaseMapper {
      */
     public boolean registryBaseMapper(String className, String sql) {
         try {
-            Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, className, sql);
+            Map<String, Class<?>> mapperClassMap = this.sqlCompileConfiguration.getBaseMapperBySql(packagePath, className, sql);
             mapperClassMap.forEach((k, v) -> {
                 sqlSessionTemplate.getConfiguration().addMapper(v);
-                this.listableBeanFactory.registerSingleton(SqlCompileUtils.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
+                this.listableBeanFactory.registerSingleton(SqlCompileConfiguration.camelCase(v.getSimpleName()), sqlSessionTemplate.getMapper(v));
             });
         } catch (Exception e) {
             log.error(" 向Spring 注入自定义BaseMapper接口失败", e);
@@ -71,9 +79,9 @@ public class SqlCompileBaseMapper {
      */
     public boolean resetBaseMapper(String className, String sql) {
         try {
-            Map<String, Class<?>> mapperClassMap = SqlCompileUtils.getBaseMapperBySql(packagePath, className, sql);
+            Map<String, Class<?>> mapperClassMap = this.sqlCompileConfiguration.getBaseMapperBySql(packagePath, className, sql);
             mapperClassMap.forEach((k, v) -> {
-                String beanName = SqlCompileUtils.camelCase(v.getSimpleName());
+                String beanName = SqlCompileConfiguration.camelCase(v.getSimpleName());
 
                 destroyBaseMapper(beanName);
 
@@ -131,4 +139,5 @@ public class SqlCompileBaseMapper {
             });
         }
     }
+
 }
