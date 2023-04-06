@@ -610,6 +610,16 @@
 >>>    }
 >>> ```
 >
+>### 自定义 Sql 编译 BaseMapper 源码构建过程
+>> 继承 SqlCompileConfiguration Sql 编译配置类，重写父类方法实现构建过程介入。
+>> ```java
+>>  /**
+>>   * 参与 Sql 编译 BaseMapper java源码过程，自定义构建规则。重写父类方法实现
+>>   */
+>>  @Configuration
+>>  public class MySqlCompileConfiguration extends SqlCompileConfiguration {
+>>  }
+>> ```
 >
 > ### 自定义 SQL BaseMapper 启动时自动注入
 >> + 向容器中注入 SqlCompileSupplier 接口实例。
