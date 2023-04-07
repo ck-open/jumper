@@ -727,7 +727,7 @@
 >
 >## 快速集成
 >> ### 环境需求
->>> 由于项目依赖与 Spring Boot、Spring Mvc、MyBatis-Plus。   
+>>> 由于项目依赖与 Spring Boot、Spring Web、MyBatis-Plus。   
 >>> 并且 未杜绝使用中版本冲突项目未打包相关依赖，
 >>> 所以项目中需要使用这自行引入相关Jar
 >
@@ -743,13 +743,13 @@
 >>>         <!-- WEB 服务依赖 -->
 >>>         <dependency>
 >>>             <groupId>org.springframework.boot</groupId>
->>>             <artifactId>spring-boot-starter-web</artifactI
+>>>             <artifactId>spring-boot-starter-web</artifactId>
 >>>         </dependency>
 >>> 
 >>>         <!-- Mybatis-plus包 -->
 >>>         <dependency>
 >>>             <groupId>com.baomidou</groupId>
->>>             <artifactId>mybatis-plus-boot-starter</artifac
+>>>             <artifactId>mybatis-plus-boot-starter</artifactId>
 >>>             <version>3.4.1</version>
 >>>         </dependency>
 >>> 
