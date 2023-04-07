@@ -129,7 +129,7 @@ public class SqlCompileConfiguration {
             if (field.endsWith(" ")) {
                 field = field.substring(0, field.lastIndexOf(" "));
             }
-            if (field.contains(" ")) {
+            if (field.contains(" ") && !field.contains(" AS ")) {
                 field = field.replace(" ", " AS ");
             }
 
@@ -169,9 +169,9 @@ public class SqlCompileConfiguration {
      * @return
      */
     public static String resetKeyword(String sql) {
-        sql = sql.replaceAll("\\r"," ").replaceAll("\\n"," ");
+        sql = sql.replaceAll("\\r", " ").replaceAll("\\n", " ");
         sql = sql.replaceAll(" {2}", " ");
-        if (sql.contains("  ")){
+        if (sql.contains("  ")) {
             sql = resetKeyword(sql);
         }
 
@@ -179,10 +179,10 @@ public class SqlCompileConfiguration {
             sql = sql.replace(";", "");
         }
 
-        if (sql.contains("select")){
-            sql = sql.replaceAll("select","SELECT");
-        }else if (sql.contains("Select")){
-            sql = sql.replaceAll("Select","SELECT");
+        if (sql.contains("select")) {
+            sql = sql.replaceAll("select", "SELECT");
+        } else if (sql.contains("Select")) {
+            sql = sql.replaceAll("Select", "SELECT");
         }
 
         if (sql.contains(" As ")) {
