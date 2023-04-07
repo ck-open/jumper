@@ -725,5 +725,58 @@
 >>>                 ├── UserInfoMapper.class
 >>> ```
 >
+>## 快速集成
+>> ### 环境需求
+>>> 由于项目依赖与 Spring Boot、Spring Mvc、MyBatis-Plus。   
+>>> 并且 未杜绝使用中版本冲突项目未打包相关依赖，
+>>> 所以项目中需要使用这自行引入相关Jar
 >
+>> ### 依赖配置
+>>> ```xml
+>>>     <dependencies>
+>>>         <!-- Spring核心依赖 -->
+>>>         <dependency>
+>>>             <groupId>org.springframework.boot</groupId>
+>>>             <artifactId>spring-boot-starter</artifactId>
+>>>         </dependency>
+>>> 
+>>>         <!-- WEB 服务依赖 -->
+>>>         <dependency>
+>>>             <groupId>org.springframework.boot</groupId>
+>>>             <artifactId>spring-boot-starter-web</artifactI
+>>>         </dependency>
+>>> 
+>>>         <!-- Mybatis-plus包 -->
+>>>         <dependency>
+>>>             <groupId>com.baomidou</groupId>
+>>>             <artifactId>mybatis-plus-boot-starter</artifac
+>>>             <version>3.4.1</version>
+>>>         </dependency>
+>>> 
+>>>         <!-- 微服务跨越查询(本功能集成jar)-->
+>>>         <dependency>
+>>>             <groupId>io.github.ck-open</groupId>
+>>>             <artifactId>jumper-starter</artifactId>
+>>>             <version>1.0.1</version>
+>>>         </dependency>
+>>> 
+>>>         <!-- MySql依赖包 -->
+>>>         <dependency>
+>>>             <groupId>mysql</groupId>
+>>>             <artifactId>mysql-connector-java</artifactId>
+>>>             <version>8.0.30</version>
+>>>         </dependency>
+>>>     </dependencies>
+>>> ```
+>
+>> ### 功能开启yml配置
+>>> ```yaml
+>>>     jumper:
+>>>       enabled: true  # 启用跨服务数据查询功能
+>>>       package_mapper: com.ck.db.po  # 根据Sql 动态提供查询时指定生成的.class存储路径
+>>>       SqlCompile:
+>>>         controller: true  # 开启 Sql 编译并加载 BaseMapper.class Http操作接口支持
+>>> ```
+>
+
 

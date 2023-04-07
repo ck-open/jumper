@@ -11,6 +11,7 @@
     <modules>
         <module>jumper-starter</module>
         <module>jumper-tools</module>
+        <module>jumper-test</module>
     </modules>
 
     <!-- 版本参数 -->
