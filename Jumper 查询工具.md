@@ -778,5 +778,28 @@
 >>>         controller: true  # 开启 Sql 编译并加载 BaseMapper.class Http操作接口支持
 >>> ```
 >
+>### Sql 动态编译 Http 接口示例
+>> + 编译接口
+>>> ```text
+>>>     127.0.0.1:8080/jumperSqlCompile/registry?className=userInfo&sql=select uc.name,uc.password,c.nick_name,c.customer_code,c.card_type,c.card_id,c.address from customer c left join user_credentials uc on c.customer_code=uc.customer_code
+>>> ```
+>> + 重新编译接口
+>>> ```text
+>>>     127.0.0.1:8080/jumperSqlCompile/reset?className=userInfo&sql=select uc.name,uc.password,c.nick_name,c.customer_code,c.card_type,c.card_id,c.address from customer c left join user_credentials uc on c.customer_code=uc.customer_code
+>>> ``` 
+>> + 卸载接口
+>>> ```text
+>>>     127.0.0.1:8080/jumperSqlCompile/destroy?className=userInfo
+>>> ```
+>>
+>> + 查询编译的接口
+>>> 具体操作方式参考上面 公共查询接口实现 介绍。  
+>>> 两个接口：分页查询、列表查询。
+>>> ```text
+>>>     - 请求方式：POST
+>>>     - 条件传参：Content-Type = application/json
+>>>     - 127.0.0.1:8080/jumper/page/userInfo
+>>>     - 127.0.0.1:8080/jumper/list/userInfo
+>>> ```
 
 
