@@ -139,7 +139,6 @@ public class SqlCompileConfiguration {
                 String[] s = field.split(" AS ");
                 tableField = s[0].trim();
                 classField = s[1].trim();
-                classField = classField.contains(".") ? classField.substring(classField.indexOf(".") + 1) : field;
             } else {
                 tableField = field;
                 classField = field.contains(".") ? field.substring(field.indexOf(".") + 1) : field;
