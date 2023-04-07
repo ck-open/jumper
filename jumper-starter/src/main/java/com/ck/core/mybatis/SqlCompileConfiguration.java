@@ -170,7 +170,11 @@ public class SqlCompileConfiguration {
      * @return
      */
     public static String resetKeyword(String sql) {
+        sql = sql.replaceAll("\\r"," ").replaceAll("\\n"," ");
         sql = sql.replaceAll(" {2}", " ");
+        if (sql.contains("  ")){
+            sql = resetKeyword(sql);
+        }
 
         if (sql.endsWith(";")) {
             sql = sql.replace(";", "");
