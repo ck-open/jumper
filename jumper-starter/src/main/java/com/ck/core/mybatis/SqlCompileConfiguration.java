@@ -167,11 +167,15 @@ public class SqlCompileConfiguration {
 
     /**
      * 命名BaseMapper
+     *
      * @param className
      * @return
      */
-    public String getMapperName(String className){
-        return className+="Mapper";
+    public String getMapperName(String className) {
+        if (className != null && !className.endsWith("Mapper")) {
+            return className + "Mapper";
+        }
+        return className;
     }
 
     /**

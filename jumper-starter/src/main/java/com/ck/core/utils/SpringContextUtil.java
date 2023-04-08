@@ -1,4 +1,4 @@
-package com.ck.core.mybatis;
+package com.ck.core.utils;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
@@ -6,6 +6,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+
+import java.util.Map;
 
 @Slf4j
 public class SpringContextUtil implements ApplicationContextAware {
@@ -36,6 +38,10 @@ public class SpringContextUtil implements ApplicationContextAware {
         return getApplicationContext().getBean(name, clazz);
     }
 
+    public static <T> Map<String, T> getBeansOfType(Class<T> clazz) {
+        return getApplicationContext().getBeansOfType(clazz);
+    }
+
     public static <T> LambdaQueryChainWrapper<T> getLambdaQuery(String name) {
         try {
             return new LambdaQueryChainWrapper<T>(getBaseMapper(name));
@@ -46,9 +52,14 @@ public class SpringContextUtil implements ApplicationContextAware {
 
     public static <T> BaseMapper<T> getBaseMapper(String name) {
         try {
-            return getBean(name + "Mapper", BaseMapper.class);
-        } catch (Exception e) {
+            if (!name.endsWith("Mapper")) name += "Mapper";
             return getBean(name, BaseMapper.class);
+        } catch (Exception e) {
+            try {
+                return getBean(name.replace("Mapper", "Dao"), BaseMapper.class);
+            } catch (Exception ignored) {
+                return null;
+            }
         }
     }
 }

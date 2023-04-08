@@ -3,13 +3,14 @@ package com.ck.core.controller;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ck.api.TResult;
-import com.ck.core.mybatis.QueryUtil;
+import com.ck.core.mybatis.IConvert;
+import com.ck.core.mybatis.QueryDto;
+import com.ck.core.utils.QueryUtil;
+import com.ck.core.utils.SpringContextUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.context.ApplicationContext;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.Resource;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -27,9 +28,6 @@ import java.util.function.Function;
 @RequestMapping("/jumper")
 public class JumperQueryController {
 
-    @Resource
-    private ApplicationContext applicationContext;
-
     /**
      * 查询分页数据
      *
@@ -41,9 +39,9 @@ public class JumperQueryController {
     @ApiOperation(value = "查询分页数据")
     @ResponseBody
     @PostMapping("page/{mapperBeanName}")
-    public <T> TResult<IPage<?>> queryPage(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryUtil.QueryDto dto) {
+    public <T> TResult<IPage<?>> queryPage(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryDto dto) {
 
-        BaseMapper<T> mapper = getBaseMapper(mapperBeanName);
+        BaseMapper<T> mapper = SpringContextUtil.getBaseMapper(mapperBeanName);
 
         if (mapper != null) {
 
@@ -72,9 +70,9 @@ public class JumperQueryController {
     @ApiOperation(value = "查询列表数据")
     @ResponseBody
     @PostMapping("list/{mapperBeanName}")
-    public <T> TResult<List<?>> queryList(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryUtil.QueryDto dto) {
+    public <T> TResult<List<?>> queryList(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryDto dto) {
 
-        BaseMapper<T> mapper = getBaseMapper(mapperBeanName);
+        BaseMapper<T> mapper = SpringContextUtil.getBaseMapper(mapperBeanName);
 
         if (mapper != null) {
 
@@ -98,9 +96,9 @@ public class JumperQueryController {
      * @param mapper
      * @param function
      */
-    private <T> TResult<?> convertDto(BaseMapper<T> mapper, Function<QueryUtil.IConvert, TResult<?>> function) {
-        Map<String, QueryUtil.IConvert> convertBeans = applicationContext.getBeansOfType(QueryUtil.IConvert.class);
-        for (QueryUtil.IConvert convert : convertBeans.values()) {
+    private <T> TResult<?> convertDto(BaseMapper<T> mapper, Function<IConvert, TResult<?>> function) {
+        Map<String, IConvert> convertBeans = SpringContextUtil.getBeansOfType(IConvert.class);
+        for (IConvert convert : convertBeans.values()) {
             Method convertMethod = convert.getClass().getMethods()[0];
             Class<?> poType = convertMethod.getParameterTypes()[0];
             if (poType.isAssignableFrom(QueryUtil.getMapperEntityClass(mapper))) {
@@ -109,25 +107,5 @@ public class JumperQueryController {
             }
         }
         return null;
-    }
-
-    /**
-     * 获取 BaseMapper<T> 实例
-     *
-     * @param mapperBeanName
-     * @param <T>
-     * @return
-     */
-    private <T> BaseMapper<T> getBaseMapper(String mapperBeanName) {
-        try {
-            if (!mapperBeanName.endsWith("Mapper")) mapperBeanName += "Mapper";
-            return applicationContext.getBean(mapperBeanName, BaseMapper.class);
-        } catch (Exception e) {
-            try {
-                return applicationContext.getBean(mapperBeanName.replaceAll("Mapper", "Dao"), BaseMapper.class);
-            } catch (Exception ignored) {
-                return null;
-            }
-        }
     }
 }

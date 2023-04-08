@@ -1,6 +1,6 @@
 package com.ck.core.event;
 
-import com.ck.core.mybatis.SpringContextUtil;
+import com.ck.core.utils.SpringContextUtil;
 import org.springframework.context.ApplicationEvent;
 
 /**

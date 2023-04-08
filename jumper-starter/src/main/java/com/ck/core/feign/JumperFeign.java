@@ -4,7 +4,7 @@ package com.ck.core.feign;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ck.api.TResult;
-import com.ck.core.mybatis.QueryUtil;
+import com.ck.core.mybatis.QueryDto;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -63,25 +63,23 @@ public class JumperFeign {
 
     public interface JumperFeignClient {
         @PostMapping("/jumper/page/{mapperBeanName}")
-        <T> TResult<IPage<T>> queryPage(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryUtil.QueryDto<?> dto);
+        <T> TResult<IPage<T>> queryPage(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryDto<?> dto);
 
         @PostMapping("/jumper/list/{mapperBeanName}")
-        <T> TResult<List<T>> queryList(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryUtil.QueryDto<?> dto);
+        <T> TResult<List<T>> queryList(@PathVariable(value = "mapperBeanName") String mapperBeanName, @RequestBody(required = false) QueryDto<?> dto);
     }
 
     public static class JumperFeignClientImpl implements JumperFeignClient {
         @Override
-        public <T> TResult<IPage<T>> queryPage(String mapperBeanName, QueryUtil.QueryDto<?> dto) {
+        public <T> TResult<IPage<T>> queryPage(String mapperBeanName, QueryDto<?> dto) {
             return TResult.build(0, "服务不可用");
         }
 
         @Override
-        public <T> TResult<List<T>> queryList(String mapperBeanName, QueryUtil.QueryDto<?> dto) {
+        public <T> TResult<List<T>> queryList(String mapperBeanName, QueryDto<?> dto) {
             return TResult.build(0, "服务不可用");
         }
     }
-
-
 
 
     /**

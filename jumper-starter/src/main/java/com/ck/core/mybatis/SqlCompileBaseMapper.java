@@ -1,6 +1,7 @@
 package com.ck.core.mybatis;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.ck.core.event.EventHandler;
 import com.ck.core.properties.JumperProperties;
 import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -79,6 +80,7 @@ public class SqlCompileBaseMapper {
                 String javaCode = this.sqlCompileConfiguration.getBaseMapperJavaCode(packagePath, className, sql);
                 Map<String, Class<?>> mapperClassMap = this.JavaCompilerHandler.compiler(javaCode);
                 if (ObjectUtils.isEmpty(mapperClassMap)) {
+                    EventHandler.publish(new EventHandler.SqlCompileError(className));
                     throw new RuntimeException(String.format("动态 Sql 编译BaseMapper失败，ClassName: %s", className));
                 }
                 mapperClassMap.forEach((k, v) -> {
