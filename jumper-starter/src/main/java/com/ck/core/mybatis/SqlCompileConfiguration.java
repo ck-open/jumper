@@ -2,6 +2,7 @@ package com.ck.core.mybatis;
 
 import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.util.ObjectUtils;
 
 import java.util.*;
 import java.util.stream.Stream;
@@ -68,7 +69,11 @@ public class SqlCompileConfiguration {
         javaSource = javaSource.replaceAll("SQLFields", getSqlPoFields(sql));
 
         log.info("动态生成 MyBatis Plus BaseMapper 查询接口\n {}", javaSource);
-        return JavaCompilerUtils.compilerString(javaSource);
+        Map<String, Class<?>> result = JavaCompilerUtils.compilerString(javaSource);
+        if (ObjectUtils.isEmpty(result)) {
+            throw new RuntimeException(String.format("动态%s  Sql解析BaseMapper失败", className));
+        }
+        return result;
     }
 
     /**

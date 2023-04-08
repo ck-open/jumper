@@ -134,7 +134,13 @@ public class SqlCompileBaseMapper {
             sqlCompileSuppliers.forEach((name, sqlCompileSupplier) -> {
                 Map<String, String> sqlMap = sqlCompileSupplier.getSql();
                 if (!ObjectUtils.isEmpty(sqlMap)) {
-                    sqlMap.forEach(this::registryBaseMapper);
+                    sqlMap.forEach((k, v) -> {
+                        try {
+                            registryBaseMapper(k, v);
+                        } catch (Exception e) {
+                            log.error("初始化自定义Sql 编译BaseMapper失败", e);
+                        }
+                    });
                 }
             });
         }
