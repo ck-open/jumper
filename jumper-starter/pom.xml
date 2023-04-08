@@ -11,7 +11,7 @@
     <!--项目信息-->
     <modelVersion>4.0.0</modelVersion>
     <artifactId>jumper-starter</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
     <name>Jumper MyBatis Plus Enhance</name>
     <description>基于MyBatis Plus 实现简化微服务之间数据查询的冗余代码</description>
     <url>https://github.com/ck-open/jumper</url>
