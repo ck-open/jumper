@@ -1,5 +1,6 @@
 package com.ck.core.mybatis;
 
+import com.ck.core.event.EventHandler;
 import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.util.ObjectUtils;
@@ -20,13 +21,13 @@ public class SqlCompileConfiguration {
 
     static {
         sourceCodeFormat
-                .append("package PackagePath;").append("\n")
-                .append("ImportList ").append("\n")
-                .append("public interface PoClassNameMapper extends BaseMapper<PoClassNameMapper.PoClassName> {").append("\n")
+                .append("package #PackagePath#;").append("\n")
+                .append("#ImportList# ").append("\n")
+                .append("public interface #PoClassNameMapper# extends BaseMapper<#PoClassNameMapper#.#PoClassName#> {").append("\n")
                 .append("    @Data").append("\n")
-                .append("    @TableName(value = \"SQLTableName\")").append("\n")
-                .append("    public static class PoClassName implements Serializable{").append("\n")
-                .append("SQLFields").append("\n")
+                .append("    @TableName(value = \"#SQLTableName#\")").append("\n")
+                .append("    public static class #PoClassName# implements Serializable{").append("\n")
+                .append("#SQLFields#").append("\n")
                 .append("    }").append("\n")
                 .append("}");
     }
@@ -42,39 +43,6 @@ public class SqlCompileConfiguration {
             , "lombok.Data;"
             , "java.io.Serializable;"
     ));
-
-
-    /**
-     * 根据自定义 Sql 生成 MyBatis Plus BaseMapper<PO> 接口源码
-     *
-     * @param className
-     * @param sql
-     * @return
-     */
-    public Map<String, Class<?>> getBaseMapperBySql(String packagePath, String className, String sql) {
-        Objects.requireNonNull(packagePath, "未指定动态 BaseMapper package 地址");
-        Objects.requireNonNull(className, "未指定动态 BaseMapper ClassName 名称");
-        Objects.requireNonNull(sql, "未指定动态 BaseMapper Sql 语句");
-
-        sql = resetKeyword(sql);
-
-
-        String javaSource = sourceCodeFormat.toString();
-        javaSource = javaSource.replaceAll("PackagePath", packagePath);
-        javaSource = javaSource.replaceAll("ImportList", getImports());
-        javaSource = javaSource.replaceAll("PoClassName", className);
-
-        sql = sql.replaceAll("\\r", " ").replaceAll("\\n", " ");
-        javaSource = javaSource.replaceAll("SQLTableName", getSqlTableName(sql));
-        javaSource = javaSource.replaceAll("SQLFields", getSqlPoFields(sql));
-
-        log.info("动态生成 MyBatis Plus BaseMapper 查询接口\n {}", javaSource);
-        Map<String, Class<?>> result = JavaCompilerUtils.compilerString(javaSource);
-        if (ObjectUtils.isEmpty(result)) {
-            throw new RuntimeException(String.format("动态%s  Sql解析BaseMapper失败", className));
-        }
-        return result;
-    }
 
     /**
      * 获取依赖类列表
@@ -168,12 +136,56 @@ public class SqlCompileConfiguration {
     }
 
     /**
+     * 根据自定义 Sql 生成 MyBatis Plus BaseMapper<PO> 接口源码
+     *
+     * @param className
+     * @param sql
+     * @return
+     */
+    public Map<String, Class<?>> getBaseMapperBySql(String packagePath, String className, String sql) {
+        Objects.requireNonNull(packagePath, "未指定动态 BaseMapper package 地址");
+        Objects.requireNonNull(className, "未指定动态 BaseMapper ClassName 名称");
+        Objects.requireNonNull(sql, "未指定动态 BaseMapper Sql 语句");
+
+        sql = resetKeyword(sql);
+
+
+        String javaSource = sourceCodeFormat.toString();
+        javaSource = javaSource.replaceAll("#PackagePath#", packagePath);
+        javaSource = javaSource.replaceAll("#ImportList#", getImports());
+        javaSource = javaSource.replaceAll("#PoClassNameMapper#", getMapperName(className));
+        javaSource = javaSource.replaceAll("#PoClassName#", className);
+
+        sql = sql.replaceAll("\\r", " ").replaceAll("\\n", " ");
+        javaSource = javaSource.replaceAll("#SQLTableName#", getSqlTableName(sql));
+        javaSource = javaSource.replaceAll("#SQLFields#", getSqlPoFields(sql));
+
+        log.info("动态生成 MyBatis Plus BaseMapper 查询接口\n {}", javaSource);
+        Map<String, Class<?>> result = JavaCompilerUtils.compilerString(javaSource);
+        if (ObjectUtils.isEmpty(result)) {
+            EventHandler.publish(new EventHandler.SqlCompileError(className));
+            throw new RuntimeException(String.format("动态%s  Sql解析BaseMapper失败", className));
+        }
+        return result;
+    }
+
+
+    /**
+     * 命名BaseMapper
+     * @param className
+     * @return
+     */
+    public String getMapperName(String className){
+        return className+="Mapper";
+    }
+
+    /**
      * 重置sql关键字大写
      *
      * @param sql
      * @return
      */
-    public static String resetKeyword(String sql) {
+    public String resetKeyword(String sql) {
         sql = sql.replaceAll("\\r", " ").replaceAll("\\n", " ");
         sql = sql.replaceAll(" {2}", " ");
         if (sql.contains("  ")) {
@@ -230,7 +242,7 @@ public class SqlCompileConfiguration {
      * @param name
      * @return
      */
-    public static String camelCase(String name) {
+    public String camelCase(String name) {
         if (name.contains("_")) {
             StringBuilder f = new StringBuilder();
             String[] s = name.split("_");
