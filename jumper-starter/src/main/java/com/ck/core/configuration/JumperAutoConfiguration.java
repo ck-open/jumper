@@ -8,6 +8,7 @@ import com.ck.core.feign.FeignClientUtils;
 import com.ck.core.feign.JumperFeign;
 import com.ck.core.interceptor.CheckRequestBodyInterceptor;
 import com.ck.core.mybatis.JumperQueryController;
+import com.ck.core.mybatis.SpringContextUtil;
 import com.ck.core.mybatis.SqlCompileBaseMapper;
 import com.ck.core.mybatis.SqlCompileBaseMapperController;
 import com.ck.core.properties.JumperProperties;
@@ -118,6 +119,19 @@ public class JumperAutoConfiguration {
         SqlCompileBaseMapper sqlCompileBaseMapper = new SqlCompileBaseMapper(beanFactory, sqlSessionTemplate, jumperProperties);
         log.info("SqlCompileBaseMapper [{}]", sqlCompileBaseMapper);
         return sqlCompileBaseMapper;
+    }
+
+    /**
+     * 依赖与 QueryUtil 工具构建的 公共数据查询接口
+     *
+     * @return
+     */
+    @Bean("jumperSpringContextUtil")
+    @ConditionalOnMissingBean(SpringContextUtil.class)
+    public SpringContextUtil springContextUtil() {
+        SpringContextUtil springContextUtil = new SpringContextUtil();
+        log.info("jumperSpringContextUtil [{}]", springContextUtil);
+        return springContextUtil;
     }
 
     /**
