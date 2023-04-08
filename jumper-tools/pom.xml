@@ -11,6 +11,7 @@
 
     <!--项目信息-->
     <artifactId>jumper-tools</artifactId>
+    <version>1.0.1</version>
     <name>Jumper java8 Tools</name>
     <description>基于 Java8 整理的工具集</description>
     <url>https://github.com/ck-open/jumper</url>
