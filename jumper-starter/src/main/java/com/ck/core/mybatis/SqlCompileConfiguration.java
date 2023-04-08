@@ -120,15 +120,7 @@ public class SqlCompileConfiguration {
     protected String getSqlPoFields(String sql) {
         StringBuilder sqlFields = new StringBuilder();
 
-        // 获取字段起始位置
-        int fieldIndexStart = 0;
-        String fieldIndexStartSrt = sql.substring(0, sql.indexOf(",") + 1).replaceAll("\\r", "").replaceAll("\\n", "");
-        fieldIndexStartSrt = fieldIndexStartSrt.replaceAll("\\w[ ]+,", "");
-        if (fieldIndexStartSrt.contains(" ")) {
-            fieldIndexStart = fieldIndexStartSrt.lastIndexOf(" ");
-        }
-
-        String fieldsSql = sql.substring(fieldIndexStart, sql.indexOf("FROM"));
+        String fieldsSql = sql.substring(0, sql.indexOf("FROM")).replace("SELECT", "");
         String[] fields = fieldsSql.split(",");
         Stream.of(fields).forEach(field -> {
             if (field.startsWith(" ")) {
@@ -191,6 +183,12 @@ public class SqlCompileConfiguration {
             sql = sql.replaceAll("select", "SELECT");
         } else if (sql.contains("Select")) {
             sql = sql.replaceAll("Select", "SELECT");
+        }
+
+        if (sql.contains("distinct")) {
+            sql = sql.replaceAll("distinct ", "");
+        } else if (sql.contains("DISTINCT")) {
+            sql = sql.replaceAll("DISTINCT", "");
         }
 
         if (sql.contains(" As ")) {
