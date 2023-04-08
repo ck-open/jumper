@@ -120,7 +120,15 @@ public class SqlCompileConfiguration {
     protected String getSqlPoFields(String sql) {
         StringBuilder sqlFields = new StringBuilder();
 
-        String fieldsSql = sql.substring(0, sql.indexOf(" FROM")).replace("SELECT ", "");
+        // 获取字段起始位置
+        int fieldIndexStart = 0;
+        String fieldIndexStartSrt = sql.substring(0, sql.indexOf(",") + 1).replaceAll("\\r", "").replaceAll("\\n", "");
+        fieldIndexStartSrt = fieldIndexStartSrt.replaceAll("\\w[ ]+,", "");
+        if (fieldIndexStartSrt.contains(" ")) {
+            fieldIndexStart = fieldIndexStartSrt.lastIndexOf(" ");
+        }
+
+        String fieldsSql = sql.substring(fieldIndexStart, sql.indexOf("FROM"));
         String[] fields = fieldsSql.split(",");
         Stream.of(fields).forEach(field -> {
             if (field.startsWith(" ")) {
