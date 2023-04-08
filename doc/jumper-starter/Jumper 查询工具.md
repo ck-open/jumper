@@ -200,7 +200,7 @@
 >     @ApiModel(value = "统一查询条件报文体")
 >     @Data
 >     @Accessors(chain = true)
->     public static class QueryDto<T> {
+>     public class QueryDto<T> {
 >         @ApiModelProperty(value = "分页-单页数量", dataType = "integer", allowableValues = "20")
 >         private Integer size = 20;
 >         @ApiModelProperty(value = "分页-页码", dataType = "integer", allowableValues = "1")
