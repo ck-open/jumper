@@ -2,6 +2,7 @@ package com.ck.core.mybatis;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ck.core.properties.JumperProperties;
+import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -29,10 +30,16 @@ public class SqlCompileBaseMapper {
     private SqlSessionTemplate sqlSessionTemplate;
     private String packagePath = "jumper.db.mapper";
     private SqlCompileConfiguration sqlCompileConfiguration;
+    private JavaCompilerHandler JavaCompilerHandler;
 
-    public SqlCompileBaseMapper(DefaultListableBeanFactory listableBeanFactory, SqlSessionTemplate sqlSessionTemplate, JumperProperties jumperProperties) {
+    public SqlCompileBaseMapper(DefaultListableBeanFactory listableBeanFactory, JumperProperties jumperProperties) {
         this.listableBeanFactory = listableBeanFactory;
-        this.sqlSessionTemplate = sqlSessionTemplate;
+
+        try {
+            this.sqlSessionTemplate = this.listableBeanFactory.getBean(SqlSessionTemplate.class);
+        } catch (Exception e) {
+            throw new RuntimeException("构建 SqlCompileBaseMapper 失败，未获取到 SqlSessionTemplate 实例");
+        }
 
         if (!ObjectUtils.isEmpty(jumperProperties) && !ObjectUtils.isEmpty(jumperProperties.getPackage_mapper())) {
             this.packagePath = jumperProperties.getPackage_mapper();
@@ -42,6 +49,12 @@ public class SqlCompileBaseMapper {
             this.sqlCompileConfiguration = this.listableBeanFactory.getBean(SqlCompileConfiguration.class);
         } catch (Exception e) {
             this.sqlCompileConfiguration = new SqlCompileConfiguration();
+        }
+
+        try {
+            this.JavaCompilerHandler = this.listableBeanFactory.getBean(JavaCompilerHandler.class);
+        } catch (Exception e) {
+            this.JavaCompilerHandler = JavaCompilerUtils::compilerString;
         }
     }
 
@@ -58,11 +71,19 @@ public class SqlCompileBaseMapper {
     public boolean registryBaseMapper(String className, String sql) {
         String beanName = this.sqlCompileConfiguration.camelCase(this.sqlCompileConfiguration.getMapperName(className.trim()));
         try {
+            if (this.listableBeanFactory.containsBean(beanName)) {
+                log.info(String.format("动态 Sql 编译BaseMapper失败，ClassName: %s 已存在容器中", beanName));
+                return false;
+            }
             if (baseMapperBeanNames.add(beanName)) {
-                Map<String, Class<?>> mapperClassMap = this.sqlCompileConfiguration.getBaseMapperBySql(packagePath, className, sql);
+                String javaCode = this.sqlCompileConfiguration.getBaseMapperJavaCode(packagePath, className, sql);
+                Map<String, Class<?>> mapperClassMap = this.JavaCompilerHandler.compiler(javaCode);
+                if (ObjectUtils.isEmpty(mapperClassMap)) {
+                    throw new RuntimeException(String.format("动态 Sql 编译BaseMapper失败，ClassName: %s", className));
+                }
                 mapperClassMap.forEach((k, v) -> {
-                    sqlSessionTemplate.getConfiguration().addMapper(v);
-                    this.listableBeanFactory.registerSingleton(this.sqlCompileConfiguration.camelCase(beanName), sqlSessionTemplate.getMapper(v));
+                    this.sqlSessionTemplate.getConfiguration().addMapper(v);
+                    this.listableBeanFactory.registerSingleton(this.sqlCompileConfiguration.camelCase(beanName), this.sqlSessionTemplate.getMapper(v));
                 });
                 return true;
             }
@@ -85,8 +106,8 @@ public class SqlCompileBaseMapper {
      */
     public boolean resetBaseMapper(String className, String sql) {
         try {
-            if (destroyBaseMapper(className)){
-               return registryBaseMapper(className,sql);
+            if (destroyBaseMapper(className)) {
+                return registryBaseMapper(className, sql);
             }
         } catch (Exception e) {
             log.error(" 重置 Spring 注入自定义BaseMapper接口失败", e);

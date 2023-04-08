@@ -1,11 +1,11 @@
 package com.ck.core.mybatis;
 
-import com.ck.core.event.EventHandler;
-import com.ck.function.JavaCompilerUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.ObjectUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
@@ -131,8 +131,8 @@ public class SqlCompileConfiguration {
      * @return
      */
     protected String getSqlPoField(String tableField, String classField) {
-        return new StringBuilder("        @TableField(\"").append(tableField).append("\")").append("\n")
-                .append("        private ").append("Object").append(" ").append(camelCase(classField)).append(";").append("\n").toString();
+        return "        @TableField(\"" + tableField + "\")" + "\n" +
+                "        private " + "Object" + " " + camelCase(classField) + ";" + "\n";
     }
 
     /**
@@ -142,7 +142,7 @@ public class SqlCompileConfiguration {
      * @param sql
      * @return
      */
-    public Map<String, Class<?>> getBaseMapperBySql(String packagePath, String className, String sql) {
+    public String getBaseMapperJavaCode(String packagePath, String className, String sql) {
         Objects.requireNonNull(packagePath, "未指定动态 BaseMapper package 地址");
         Objects.requireNonNull(className, "未指定动态 BaseMapper ClassName 名称");
         Objects.requireNonNull(sql, "未指定动态 BaseMapper Sql 语句");
@@ -161,12 +161,7 @@ public class SqlCompileConfiguration {
         javaSource = javaSource.replaceAll("#SQLFields#", getSqlPoFields(sql));
 
         log.info("动态生成 MyBatis Plus BaseMapper 查询接口\n {}", javaSource);
-        Map<String, Class<?>> result = JavaCompilerUtils.compilerString(javaSource);
-        if (ObjectUtils.isEmpty(result)) {
-            EventHandler.publish(new EventHandler.SqlCompileError(className));
-            throw new RuntimeException(String.format("动态%s  Sql解析BaseMapper失败", className));
-        }
-        return result;
+        return javaSource;
     }
 
 
