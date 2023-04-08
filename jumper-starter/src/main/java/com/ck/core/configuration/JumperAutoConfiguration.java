@@ -7,9 +7,9 @@ import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerIntercept
 import com.ck.core.feign.FeignClientUtils;
 import com.ck.core.feign.JumperFeign;
 import com.ck.core.interceptor.CheckRequestBodyInterceptor;
-import com.ck.core.mybatis.JumperQueryController;
+import com.ck.core.controller.JumperQueryController;
 import com.ck.core.mybatis.SqlCompileBaseMapper;
-import com.ck.core.mybatis.SqlCompileBaseMapperController;
+import com.ck.core.controller.SqlCompileBaseMapperController;
 import com.ck.core.properties.JumperProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;

@@ -16,8 +16,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * @ClassName SqlCompileBaseMapper
- * @Description 依据自定义SQL 生成 mybatis plus BaseMapper  并注入到 Spring 容器
+ * @ClassName Dynamic Compile Loading MyBatis Plus BaseMapper
+ * @Description 依据自定义 javaCode 动态生成 mybatis plus BaseMapper  并注入到 Spring 容器
  * @Author Cyk
  * @Version 1.0
  * @since 2023/1/30 13:37

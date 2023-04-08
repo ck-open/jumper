@@ -1,8 +1,9 @@
-package com.ck.core.mybatis;
+package com.ck.core.controller;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.ck.api.TResult;
+import com.ck.core.mybatis.QueryUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.context.ApplicationContext;

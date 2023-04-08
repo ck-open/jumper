@@ -9,8 +9,8 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 /**
- * @ClassName Dynamic Loading MyBatis Plus BaseMapper
- * @Description 动态生成加载 BaseMapper 工具类
+ * @ClassName SqlCompileConfiguration
+ * @Description 依据自定义SQL 解析成 mybatis plus BaseMapper java源码
  * @Author Cyk
  * @Version 1.0
  * @since 2023/3/31 9:51

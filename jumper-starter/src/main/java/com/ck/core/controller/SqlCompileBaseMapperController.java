@@ -1,6 +1,7 @@
-package com.ck.core.mybatis;
+package com.ck.core.controller;
 
 import com.ck.api.TResult;
+import com.ck.core.mybatis.SqlCompileBaseMapper;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
