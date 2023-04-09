@@ -13,6 +13,7 @@
         <module>jumper-tools</module>
         <module>jumper-test</module>
         <module>jumper-qr</module>
+        <module>jumper-poi</module>
     </modules>
 
     <!-- 版本参数 -->

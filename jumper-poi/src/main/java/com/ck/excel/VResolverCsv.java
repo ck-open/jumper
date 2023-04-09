@@ -1,7 +1,7 @@
-package com.ck.v_excel;
+package com.ck.excel;
 
-import com.ck.v_excel.annotation.VExcelCell;
-import com.ck.v_excel.annotation.VExcelTable;
+import com.ck.excel.annotation.VExcelCell;
+import com.ck.excel.annotation.VExcelTable;
 
 import java.io.*;
 import java.lang.reflect.Field;

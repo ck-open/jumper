@@ -1,8 +1,7 @@
-package com.ck.v_excel.annotation;
+package com.ck.excel.annotation;
 
-
-import com.ck.v_excel.enums.VExcelCellFormatEnum;
-import com.ck.v_excel.enums.VExcelStyle;
+import com.ck.excel.enums.VExcelCellFormatEnum;
+import com.ck.excel.enums.VExcelStyle;
 import org.apache.poi.ss.usermodel.FillPatternType;
 import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.VerticalAlignment;
@@ -18,18 +17,7 @@ import java.lang.annotation.*;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD})
-public @interface VExcelCell {
-    /**
-     * 标题名称 空则取属性名
-     *
-     * @return
-     */
-    String value() default "";
-
-    /**
-     * 列宽  默认不设置
-     */
-    int columnWidth() default -1;
+public @interface VExcelTitleStyle {
 
     /**
      * 单元格数据格式  默认 常规
@@ -53,7 +41,7 @@ public @interface VExcelCell {
     /**
      * 水平对齐方式  默认靠左
      */
-    HorizontalAlignment alignment() default HorizontalAlignment.LEFT;
+    HorizontalAlignment alignment() default HorizontalAlignment.CENTER;
 
     /**
      * 垂直对齐方式  默认居中
@@ -191,29 +179,15 @@ public @interface VExcelCell {
      */
     int[] fillForegroundColorCustom() default {};
 
-//    /**
-//     * 单元格向下合并行数 默认不合并
-//     * @return
-//     */
-//    int mergedRegionRow() default -1;
-//
-//    /**
-//     * 单元格向右合并列数 默认不合并
-//     * @return
-//     */
-//    int mergedRegionColumn() default -1;
-
     /**
-     * 标记此字段是否用于记录行号的  默认未否
-     * 为true时 在读写的文件中都不体现此字段，且以上所有注解配置失效
+     * 单元格向下合并行数 默认不合并
      * @return
      */
-    boolean isRowNumber() default false;
+    int mergedRegionRow() default -1;
 
     /**
-     * 设置自适应列宽 默认不设置   xls格式不支持此属性，设置后将不生效
-     *
+     * 单元格向右合并列数 默认不合并
      * @return
      */
-    boolean autoSizeColumn() default false;
+    int mergedRegionColumn() default -1;
 }

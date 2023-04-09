@@ -7,13 +7,12 @@
         <groupId>io.github.ck-open</groupId>
         <version>1.0.0</version>
     </parent>
-
-    <!--项目信息-->
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>jumper-starter</artifactId>
-    <version>1.0.4</version>
-    <name>Jumper MyBatis Plus Enhance</name>
-    <description>基于MyBatis Plus 实现简化微服务之间数据查询的冗余代码</description>
+
+    <artifactId>jumper-poi</artifactId>
+    <version>1.0.0</version>
+    <name>Jumper Poi Tools</name>
+    <description>基于 Poi 整理的操作工具集</description>
     <url>https://github.com/ck-open/jumper</url>
 
     <!--打包方式-->
@@ -65,78 +64,22 @@
     </distributionManagement>
 
     <dependencies>
-        <!--引入工具类-->
+
+        <!--操作Excel依赖jar包 -->
         <dependency>
-            <groupId>io.github.ck-open</groupId>
-            <artifactId>jumper-tools</artifactId>
-            <version>1.0.2</version>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-excelant</artifactId>
+            <version>4.1.0</version>
             <scope>compile</scope>
         </dependency>
-
-        <!-- Swagger -->
         <dependency>
-            <groupId>io.swagger</groupId>
-            <artifactId>swagger-annotations</artifactId>
-            <version>1.5.14</version>
-            <scope>provided</scope>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>4.1.0</version>
+            <scope>compile</scope>
         </dependency>
-
-        <!-- mybatis-plus-->
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-core</artifactId>
-            <version>3.4.3.4</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-extension</artifactId>
-            <version>3.4.3.4</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <!-- Spring-->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>5.3.19</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>5.3.19</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>5.3.19</version>
-            <scope>provided</scope>
-        </dependency>
-        <!-- openfeign 服务依赖 -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-openfeign-core</artifactId>
-            <version>3.1.2</version>
-            <scope>provided</scope>
-        </dependency>
-        <!-- WEB 服务依赖 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-            <version>2.6.4</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.11.4</version>
-            <scope>provided</scope>
-        </dependency>
-
     </dependencies>
+
 
     <!--发布到oss.sonatype.org需要的组件，已经配置好，无需修改-->
     <build>
@@ -195,4 +138,6 @@
             </plugin>
         </plugins>
     </build>
+
+
 </project>
