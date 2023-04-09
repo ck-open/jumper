@@ -757,7 +757,7 @@
 >>>         <dependency>
 >>>             <groupId>io.github.ck-open</groupId>
 >>>             <artifactId>jumper-starter</artifactId>
->>>             <version>1.0.1</version>
+>>>             <version>1.0.4</version>
 >>>         </dependency>
 >>> 
 >>>         <!-- MySql依赖包 -->
@@ -768,7 +768,17 @@
 >>>         </dependency>
 >>>     </dependencies>
 >>> ```
->
+>>### Maven 同步库缺包问题
+>> 使用Maven 中央公共库或下面暂存库
+>>> ```xml
+>>>   <!-- 中央仓库暂存库镜像 -->
+>>>   <mirror>
+>>>   	<id>s01.oss.sonatype</id>
+>>>   	<name>Sonatype Maven Central</name>
+>>>   	<url>https://s01.oss.sonatype.org/content/groups/public/</url>
+>>>   	<mirrorOf>central</mirrorOf>
+>>>   </mirror>
+>>> ``` 
 >> ### 功能开启yml配置
 >>> ```yaml
 >>>     jumper:
