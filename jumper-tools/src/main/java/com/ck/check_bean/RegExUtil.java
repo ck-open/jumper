@@ -343,6 +343,43 @@ public final class RegExUtil {
         return in.contains(val);
     }
 
+    /**
+     * 字符串转驼峰
+     * @param str
+     * @return
+     */
+    public static String toHump(String str) {
+        if (str.contains("_")) {
+            StringBuilder f = new StringBuilder();
+            String[] s = str.split("_");
+            for (String i : s) {
+                i = i.toLowerCase();
+                if (f.length() < 1) {
+                    f.append(i);
+                } else {
+                    if (i.length() < 1) {
+                        f.append(i.toUpperCase());
+                    } else {
+                        f.append(i.substring(0, 1).toUpperCase());
+                        if (i.length() > 1) {
+                            f.append(i.substring(1));
+                        }
+                    }
+                }
+            }
+            str = f.toString();
+        } else if (str.length() > 0) {
+            if (str.length() > 1) {
+                str = str.substring(0, 1).toLowerCase() + str.substring(1);
+            } else {
+                str = str.substring(0, 1).toLowerCase();
+            }
+        } else {
+            return str.toLowerCase();
+        }
+        return str;
+    }
+
 
     public static void main(String[] args) {
 

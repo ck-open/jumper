@@ -70,7 +70,7 @@ public class SqlCompileBaseMapper {
      * @return
      */
     public boolean registryBaseMapper(String className, String sql) {
-        String beanName = this.sqlCompileConfiguration.camelCase(this.sqlCompileConfiguration.getMapperName(className.trim()));
+        String beanName = this.sqlCompileConfiguration.toHump(this.sqlCompileConfiguration.getMapperName(className.trim()));
         try {
             if (this.listableBeanFactory.containsBean(beanName)) {
                 log.info(String.format("动态 Sql 编译BaseMapper失败，ClassName: %s 已存在容器中", beanName));
@@ -85,7 +85,7 @@ public class SqlCompileBaseMapper {
                 }
                 mapperClassMap.forEach((k, v) -> {
                     this.sqlSessionTemplate.getConfiguration().addMapper(v);
-                    this.listableBeanFactory.registerSingleton(this.sqlCompileConfiguration.camelCase(beanName), this.sqlSessionTemplate.getMapper(v));
+                    this.listableBeanFactory.registerSingleton(this.sqlCompileConfiguration.toHump(beanName), this.sqlSessionTemplate.getMapper(v));
                 });
                 return true;
             }
@@ -125,7 +125,7 @@ public class SqlCompileBaseMapper {
      */
     public boolean destroyBaseMapper(String beanName) {
         try {
-            beanName = this.sqlCompileConfiguration.camelCase(this.sqlCompileConfiguration.getMapperName(beanName.trim()));
+            beanName = this.sqlCompileConfiguration.toHump(this.sqlCompileConfiguration.getMapperName(beanName.trim()));
             if (baseMapperBeanNames.contains(beanName)) {
                 Object o = this.listableBeanFactory.getBean(beanName);
                 if (!BaseMapper.class.isAssignableFrom(o.getClass())) {

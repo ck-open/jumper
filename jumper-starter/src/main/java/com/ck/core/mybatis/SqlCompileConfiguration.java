@@ -1,5 +1,6 @@
 package com.ck.core.mybatis;
 
+import com.ck.check_bean.RegExUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
@@ -132,7 +133,7 @@ public class SqlCompileConfiguration {
      */
     protected String getSqlPoField(String tableField, String classField) {
         return "        @TableField(\"" + tableField + "\")" + "\n" +
-                "        private " + "Object" + " " + camelCase(classField) + ";" + "\n";
+                "        private " + "Object" + " " + toHump(classField) + ";" + "\n";
     }
 
     /**
@@ -241,32 +242,7 @@ public class SqlCompileConfiguration {
      * @param name
      * @return
      */
-    public String camelCase(String name) {
-        if (name.contains("_")) {
-            StringBuilder f = new StringBuilder();
-            String[] s = name.split("_");
-            for (String i : s) {
-                if (f.length() < 1) {
-                    f.append(i.toLowerCase());
-                } else {
-                    if (i.length() < 1) {
-                        f.append(i.toUpperCase());
-                    } else {
-                        f.append(i.substring(0, 1).toUpperCase());
-                        if (i.length() > 1) {
-                            f.append(i.substring(1));
-                        }
-                    }
-                }
-            }
-            name = f.toString();
-        } else if (name.length() > 0) {
-            if (name.length() > 1) {
-                name = name.substring(0, 1).toLowerCase() + name.substring(1);
-            } else {
-                name = name.substring(0, 1).toLowerCase();
-            }
-        }
-        return name;
+    public String toHump(String name) {
+        return RegExUtil.toHump(name);
     }
 }
