@@ -1,4 +1,5 @@
 # 基于 Mybatis plus LambdaQuery 实现的 Jumper 查询工具
+GitLub 卡顿无法正常使用请移步： https://gitlab.com/ck-open/jumper
 ## 现状
 >+ 多条件数据查询时需要大量的编写 eq、lt、ge、like、in 等方法设置条件并且每个条件基本需要判空。
 >+ 简单查询通常会有controller -> service -> mapper。即使没有service 在controller中也会存在重复性代码。
