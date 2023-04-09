@@ -4,23 +4,23 @@ import com.alibaba.fastjson.JSONObject;
 import com.ck.utils.TimeUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
-import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.logging.Logger;
 
 /**
  * 返回结果信息
  *
  * @version 1.0
  */
-@Slf4j
 @Data
 @Accessors(chain = true)
 public class TResult<T> implements Serializable {
+    private static Logger log = Logger.getLogger(TResult.class.getName());
 
     private Integer status = 1;
 
@@ -30,7 +30,7 @@ public class TResult<T> implements Serializable {
 
     private T data;
 
-    public TResult(){
+    public TResult() {
     }
 
     @Override
@@ -44,13 +44,14 @@ public class TResult<T> implements Serializable {
     }
 
 
-
-    public static <T> TResult<T> build(TResultCode code,String message) {
+    public static <T> TResult<T> build(TResultCode code, String message) {
         return build(code.getCode(), message, null);
     }
-    public static <T> TResult<T> build(TResultCode code,String message,T data) {
+
+    public static <T> TResult<T> build(TResultCode code, String message, T data) {
         return build(code.getCode(), message, data);
     }
+
     public static <T> TResult<T> build(TResultCode code) {
         return build(code.getCode(), code.getMessage(), null);
     }
@@ -83,7 +84,9 @@ public class TResult<T> implements Serializable {
             response.getWriter().flush();
             response.getWriter().close();
         } catch (IOException e) {
-            log.error("响应异常信息失败", e);
+            log.warning("响应异常信息失败  error:" + e.getMessage());
+            throw new RuntimeException(e);
+
         }
     }
 
